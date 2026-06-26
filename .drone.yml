@@ -1,10 +1,15 @@
-kind: pipeline
-type: docker
-name: python-ci
+kind: pipeline         # 声明这是一个 CI 流水线
+type: docker           # 用 Docker 执行
+name: build-deb        # 流水线名称
 
 steps:
-  - name: test
-    image: python:3.12
+  - name: package      # 步骤1：打包
+    image: debian:bookworm  # 在 Debian 容器里跑
     commands:
-      - pip install -r requirements.txt
-      - pytest
+      - apt-get update && apt-get install -y dpkg-dev tar bzip2
+      - chmod +x build.sh
+      - ./build.sh      # 执行你的 build.sh
+
+trigger:
+  branch:
+    - main             # 只有 main 分支 push 才触发
