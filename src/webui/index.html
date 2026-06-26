@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CB Test</title>
+<link rel="stylesheet" href="./styles.css?v=2.0.007">
+</head>
+<body>
+<div class="app-container">
+  <!-- ═══ Row 1: Header ═══ -->
+  <div class="app-header">
+    <div class="header-left">
+      <span class="app-logo">🧪</span>
+      <span class="app-title">CB Test</span>
+      <span class="app-version">v2.0.007</span>
+    </div>
+    <div class="header-right">
+      <span id="auth-status" class="auth-status logged-out">
+        <span class="auth-indicator">●</span>
+        <span class="auth-label" id="auth-label">未登录</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══ Row 2: Views + Stats ═══ -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="tab-group" id="tab-group">
+        <button class="tab active" data-view="cases">接口用例</button>
+        <button class="tab" data-view="scenarios">场景流</button>
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <div class="stats-bar" id="progress-container" style="display:flex;">
+        <span class="stat-item stat-pass">✅ <b id="stat-pass">0</b></span>
+        <span class="stat-item stat-fail">❌ <b id="stat-fail">0</b></span>
+        <span class="stat-item stat-skip">⏭ <b id="stat-skip">0</b></span>
+        <span class="stat-item stat-running">⏳ <b id="stat-running">0</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Row 3: Progress Bar ═══ -->
+  <div class="progress-wrap" id="progress-bar-wrap" style="display:none;">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <span class="progress-label" id="progress-text"></span>
+  </div>
+
+  <!-- ═══ Row 4: Module Tabs + Cases Actions ═══ -->
+  <div class="toolbar toolbar-sub" id="module-tabs" style="margin-bottom:8px;">
+    <div class="toolbar-left">
+      <button class="tab active" data-module="all">全部 <span class="tab-count" id="tab-count-all">0</span></button>
+      <button class="tab" data-module="PC/Server">PC/Server</button>
+      <button class="tab" data-module="FileServer">FileServer</button>
+      <button class="tab" data-module="VMware">VMware</button>
+      <button class="tab" data-module="Hyper-V">Hyper-V</button>
+      <button class="tab" data-module="TOS">TOS</button>
+    </div>
+    <div class="toolbar-right" id="cases-toolbar">
+      <button class="btn btn-secondary" id="btn-select-all">全选</button>
+      <button class="btn btn-secondary" id="btn-invert">反选</button>
+      <button class="btn btn-accent" id="btn-add">新增</button>
+      <button class="btn btn-primary" id="btn-run">执行</button>
+      <button class="btn btn-danger" id="btn-stop" disabled>停止</button>
+      <button class="btn btn-ghost" id="btn-export">导出</button>
+      <button class="btn btn-ghost" id="btn-clear">清空</button>
+      <button class="btn btn-ghost" id="btn-sync">同步</button>
+    </div>
+  </div>
+
+  <!-- ═══ View: Cases ═══ -->
+  <div id="view-cases">
+    <div class="table-wrap">
+      <table class="tbl" id="test-table"><thead><tr>
+        <th class="col-check"><input type="checkbox" id="check-all"></th>
+        <th class="col-id">ID</th><th class="col-method">方法</th><th class="col-path">接口</th>
+        <th class="col-title">描述</th><th class="col-priority">优先级</th>
+        <th class="col-result">结果</th><th class="col-time">耗时</th><th class="col-actions">操作</th>
+      </tr></thead><tbody id="test-tbody"></tbody></table>
+      <div class="empty-state" id="empty-state" style="display:none;"><p>暂无测试用例</p></div>
+    </div>
+  </div>
+
+  <!-- ═══ View: Scenarios ═══ -->
+  <div id="view-scenarios" style="display:none;">
+    <div class="scenario-layout">
+      <div class="scenario-sidebar">
+        <div class="scenario-sidebar-head">
+          <h3>场景流</h3>
+          <div class="scenario-sidebar-actions">
+            <button class="btn btn-ghost btn-sm" id="s-btn-folder">📁+</button>
+            <button class="btn btn-ghost btn-sm" id="s-btn-add">＋</button>
+          </div>
+        </div>
+        <div class="scenario-tree" id="s-tree"><p class="scenario-empty-hint">加载中...</p></div>
+      </div>
+      <div class="scenario-main">
+        <div class="scenario-empty" id="s-empty"><p>选择一个场景或新建</p></div>
+        <div id="s-detail" style="display:none;">
+          <div class="scenario-detail-head">
+            <h2 id="s-name"></h2>
+            <p id="s-desc" class="text-muted"></p>
+          </div>
+          <div class="scenario-detail-actions">
+            <button class="btn btn-primary" id="s-btn-run">▶ 执行</button>
+            <button class="btn btn-accent btn-sm" id="s-btn-record">📸 录制</button>
+            <button class="btn btn-secondary" id="s-btn-edit">编辑</button>
+            <button class="btn btn-ghost" id="s-btn-del">删除</button>
+          </div>
+          <div id="s-steps"></div>
+          <div class="scenario-progress" id="s-progress" style="display:none;">
+            <div class="progress-bar"><div class="progress-fill" id="s-progress-fill"></div></div>
+            <span class="progress-label" id="s-progress-text"></span>
+          </div>
+          <div class="run-history" id="s-history">
+            <div class="run-history-head">
+              <h4>执行历史</h4>
+              <button class="btn btn-ghost btn-sm" id="s-history-clear">清空</button>
+            </div>
+            <div id="s-history-list"><p class="text-muted">暂无记录</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Detail Panel ═══ -->
+  <div class="overlay" id="detail-overlay"></div>
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-head"><h2 id="detail-title">用例详情</h2><button class="detail-close" id="detail-close">&times;</button></div>
+    <div class="detail-body">
+      <div class="detail-section"><div id="detail-info"></div></div>
+      <div class="detail-section">
+        <h3>请求参数</h3>
+        <div class="code-block" id="detail-request"></div>
+      </div>
+      <div class="detail-section">
+        <h3>响应结果</h3>
+        <div class="code-block" id="detail-response"></div>
+      </div>
+      <button class="btn btn-secondary" id="detail-edit">编辑</button>
+    </div>
+  </div>
+
+  <!-- ═══ Login Modal ═══ -->
+  <div class="modal-overlay" id="login-modal" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-head"><h2>TOS 登录</h2><button class="detail-close" id="login-close">&times;</button></div>
+      <div class="modal-body">
+        <label>URL <input id="login-url" placeholder="http://10.18.8.81:8181"></label>
+        <label>用户名 <input id="login-user" placeholder="demo"></label>
+        <label>密码 <input type="password" id="login-pass"></label>
+      </div>
+      <div class="modal-actions"><button class="btn btn-primary" id="btn-login">登录</button><button class="btn btn-secondary" id="btn-login-cancel">取消</button></div>
+      <p class="modal-hint" id="login-hint"></p>
+    </div>
+  </div>
+
+  <!-- ═══ Editor Modal ═══ -->
+  <div class="modal-overlay" id="editor-modal" style="display:none;">
+    <div class="modal-box modal-wide">
+      <div class="modal-head"><h2 id="editor-title">编辑用例</h2><button class="detail-close" id="editor-close">&times;</button></div>
+      <div class="modal-body">
+        <input type="hidden" id="editor-id">
+        <div class="editor-grid">
+          <div><label>标题</label><input id="editor-title-input"></div>
+          <div><label>模块</label><select id="editor-module"><option value="PC/Server">PC/Server</option><option value="FileServer">FileServer</option><option value="VMware">VMware</option><option value="Hyper-V">Hyper-V</option><option value="TOS">TOS</option></select></div>
+          <div><label>方法</label><select id="editor-method"><option value="GET">GET</option><option value="POST">POST</option><option value="PUT">PUT</option><option value="DELETE">DELETE</option></select></div>
+          <div><label>接口</label><input id="editor-path" placeholder="/path/to/resource"></div>
+          <div><label>优先级</label><select id="editor-priority"><option value="P0">P0</option><option value="P1">P1</option><option value="P2">P2</option></select></div>
+          <div><label>特征</label><input id="editor-feature"></div>
+          <div><label>预期状态码</label><input type="number" id="editor-expected" placeholder="200"></div>
+        </div>
+        <div id="editor-qp-fields"></div><button class="btn btn-ghost btn-sm" id="editor-qp-add">+ 查询参数</button>
+        <div id="editor-pp-fields"></div><button class="btn btn-ghost btn-sm" id="editor-pp-add">+ 路径参数</button>
+        <div id="editor-body-section" style="margin-top:12px;"><label>请求体</label><textarea id="editor-body" rows="6" style="width:100%;font-family:monospace;font-size:12px;"></textarea><span id="editor-body-error" style="color:red;font-size:11px;display:none;"></span></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="editor-save">保存</button>
+        <button class="btn btn-secondary" id="editor-cancel">取消</button>
+        <button class="btn btn-danger" id="editor-delete">删除</button>
+        <button class="btn btn-ghost" id="editor-reset">重置</button>
+      </div>
+      <p class="modal-hint" id="editor-hint"></p>
+    </div>
+  </div>
+
+  <!-- ═══ Param Modal ═══ -->
+  <div class="modal-overlay" id="param-modal" style="display:none;">
+    <div class="modal-box modal-wide">
+      <div class="modal-head"><h2 id="param-title">路径参数</h2><button class="detail-close" id="param-close">&times;</button></div>
+      <div class="modal-body">
+        <div id="param-path-section"><div id="param-path-fields"></div></div>
+        <div id="param-body-section"><label>请求体覆盖</label><textarea id="param-body-input" rows="8" style="width:100%;font-family:monospace;font-size:12px;"></textarea><span id="param-body-error" style="color:red;font-size:11px;display:none;"></span></div>
+      </div>
+      <div class="modal-actions"><button class="btn btn-primary" id="param-execute">执行</button><button class="btn btn-secondary" id="param-cancel">取消</button></div>
+      <p class="modal-hint" id="param-hint"></p>
+    </div>
+  </div>
+
+  <!-- ═══ Scenario Editor Modal ═══ -->
+  <div class="modal-overlay" id="se-modal" style="display:none;">
+    <div class="modal-box modal-wide">
+      <div class="modal-head"><h2 id="se-title">新建场景</h2><button class="detail-close" id="se-close">&times;</button></div>
+      <div class="modal-body">
+        <input type="hidden" id="se-id">
+        <div class="editor-grid">
+          <div><label>名称</label><input id="se-name"></div>
+          <div><label>文件夹</label><select id="se-folder"><option value="">未分类</option></select></div>
+          <div><label>描述</label><input id="se-desc"></div>
+        </div>
+        <div class="se-steps-title">步骤编排</div>
+        <div id="se-steps"></div>
+        <button class="btn btn-ghost" id="se-add-step">+ 添加步骤</button>
+        <div class="modal-actions"><button class="btn btn-primary" id="se-save">保存</button><button class="btn btn-secondary" id="se-cancel">取消</button></div>
+        <p class="modal-hint" id="se-hint"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Step Body Editor Modal ═══ -->
+  <div class="modal-overlay" id="step-body-modal" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-head"><h2 id="step-body-title">编辑请求体</h2><button class="detail-close" id="step-body-close">&times;</button></div>
+      <div class="modal-body">
+        <p class="modal-hint" id="step-body-hint"></p>
+        <textarea id="step-body-input" rows="12" style="width:100%;font-family:monospace;font-size:12px;"></textarea>
+        <span id="step-body-error" style="color:red;font-size:11px;display:none;"></span>
+      </div>
+      <div class="modal-actions"><button class="btn btn-primary" id="step-body-save">保存</button><button class="btn btn-secondary" id="step-body-cancel">取消</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="./app.js?v=2.0.007"></script>
+</body>
+</html>

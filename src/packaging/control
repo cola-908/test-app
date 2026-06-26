@@ -1,0 +1,9 @@
+Package: cbtest
+Version: 2.0.004
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: CBTest <dev@terra-master.com>
+Description: CentralizedBackup API Test Tool
+ A testing tool for validating CentralizedBackup REST API endpoints.
+ Integrated with TOS as an iframe application.

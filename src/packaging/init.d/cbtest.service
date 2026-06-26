@@ -1,0 +1,11 @@
+[Unit]
+Description=CB Test - CentralizedBackup API Test Service
+After=network.target
+
+[Service]
+Type=simple
+User=demo
+ExecStart=/usr/local/cbtest/bin/cbtest
+
+[Install]
+WantedBy=multi-user.target

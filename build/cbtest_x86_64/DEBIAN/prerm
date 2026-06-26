@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+
+# 停止并禁用服务
+systemctl stop cbtest 2>/dev/null || true
+systemctl disable cbtest 2>/dev/null || true
+
+# 清理 systemd 文件
+rm -f /lib/systemd/system/cbtest.service
+systemctl daemon-reload
+
+# 清理 socket
+rm -f /var/api/cbtest.sock
+
+# 清理 webui 解压文件
+rm -rf /usr/local/cbtest/webui

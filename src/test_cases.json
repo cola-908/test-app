@@ -1,0 +1,4259 @@
+[
+  {
+    "id": "CB-001",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "查询设备(desktop)",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /win/devices",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "query_params": "type=desktop",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-001b",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "查询设备(server)",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /win/devices",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "query_params": "type=server",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-002",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}",
+    "method": "DELETE",
+    "priority": "P3",
+    "feature": "设备管理",
+    "title": "batch删除设备",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /win/batch/devices/delete",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "path_params": {
+      "device_id": "4c:ed:fb:93:a9:9a"
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-003",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/tasks",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "查询任务(desktop)",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /win/tasks",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "query_params": "type=desktop",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-003b",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/tasks",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "查询任务(server)",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /win/tasks",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "query_params": "type=server",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-004",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/tasks/relink",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "导入备份数据（desktop)",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /win/tasks/relink",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "body": {
+      "path": "/Volume1/public/CentralizedBackup"
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "query_params": {
+      "0": "t",
+      "1": "y",
+      "2": "p",
+      "3": "e",
+      "4": "=",
+      "5": "d",
+      "6": "e",
+      "7": "s",
+      "8": "k",
+      "9": "t",
+      "10": "0",
+      "11": "p"
+    }
+  },
+  {
+    "id": "CB-005",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}/task",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "创建【整台设备】备份任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /win/batch/tasks/add",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "body": {
+      "name": "Win-PC-Task-2",
+      "device": "00:0c:29:59:f4:57",
+      "type": 3,
+      "dst_path": "/Volume1/public",
+      "volumes": [
+        ""
+      ],
+      "max_version": 2,
+      "keep_all": true,
+      "schedule_enable": true,
+      "schedule": {
+        "cycle_type": "EveryDay",
+        "cycle_weeks_range": "0,1,2,3,4,5,6",
+        "cycle_date": "23",
+        "schedule_time": "2026-06-23",
+        "frequency_type": "Disabled",
+        "frequency_value": 0,
+        "hour": 3,
+        "minute": 0
+      },
+      "auto_awake": true,
+      "sleep_avoid": true,
+      "backup_external_disk": true
+    },
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57"
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-006",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}/tasks/{task_id}/version",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "batch执行备份任务列表",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /win/batch/tasks/exec",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {},
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57",
+      "task_id": "11"
+    }
+  },
+  {
+    "id": "CB-007",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/batch/tasks/cancel",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "batch取消备份任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /win/batch/tasks/cancel",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {
+      "device_tasks": [
+        {
+          "device_id": "00:0c:29:59:f4:57",
+          "task_id": 7
+        }
+      ]
+    }
+  },
+  {
+    "id": "CB-008",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}/tasks/{task_id}",
+    "method": "DELETE",
+    "priority": "P3",
+    "feature": "任务管理",
+    "title": "batch删除任务列表",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /win/batch/tasks/delete",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57",
+      "task_id": "13"
+    }
+  },
+  {
+    "id": "CB-009",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}/tasks/{task_id}",
+    "method": "POST",
+    "priority": "P3",
+    "feature": "任务管理",
+    "title": "batch编辑任务列表",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /win/batch/tasks/edit",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {
+      "id": 7,
+      "name": "Win-PC-Task-2",
+      "dst_path": "/Volume1/public/CentralizedBackupImage/Windows/Win-PC-Task-2",
+      "type": 3,
+      "volumes": [
+        ""
+      ],
+      "max_version": 2,
+      "keep_all": true,
+      "schedule_enable": true,
+      "schedule": {
+        "cycle_type": "EveryDay",
+        "cycle_weeks_range": "0,1,2,3,4,5,6",
+        "cycle_date": "23",
+        "schedule_time": "2026-06-23",
+        "frequency_type": "Disabled",
+        "frequency_value": 0,
+        "hour": 3,
+        "minute": 0
+      },
+      "sleep_avoid": true,
+      "auto_awake": true,
+      "backup_external_disk": true
+    },
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57",
+      "task_id": "7"
+    }
+  },
+  {
+    "id": "CB-017",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/portal/dir",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "Portal浏览",
+    "title": "portal目录",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /win/portal/dir",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-018",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/overview",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "版本管理",
+    "title": "概览",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /win/overview",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-105",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "编辑设备(PC)",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装，已存在设备",
+    "steps": "1. POST /win/devices/{device_id} body={\"alias\":\"Computer-1ds\"}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "body": {
+      "alias": "Computer-1dsddd"
+    },
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57"
+    },
+    "body_schema": {
+      "alias": "string"
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-019",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/device",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "SMB查询设备",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/device",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 3,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": [
+          {
+            "id": 1,
+            "name": "SMB-Server-1",
+            "port": 445,
+            "type": 0,
+            "rsync_mode": 0,
+            "ip": "10.18.8.11",
+            "user": "bbs",
+            "createTime": 1781695804,
+            "online_status": true
+          },
+          {
+            "id": 3,
+            "name": "Rsync-Server-1",
+            "port": 873,
+            "type": 1,
+            "rsync_mode": 2,
+            "ip": "10.18.8.11",
+            "user": "demo",
+            "createTime": 1781695857,
+            "online_status": true
+          },
+          {
+            "id": 4,
+            "name": "SMB-Server-2",
+            "port": 445,
+            "type": 0,
+            "rsync_mode": 0,
+            "ip": "10.18.8.155",
+            "user": "demo",
+            "createTime": 1782268209,
+            "online_status": true
+          },
+          {
+            "id": 5,
+            "name": "Rsync-Server-2",
+            "port": 873,
+            "type": 1,
+            "rsync_mode": 2,
+            "ip": "10.18.8.155",
+            "user": "demo",
+            "createTime": 1782273755,
+            "online_status": true
+          }
+        ],
+        "time": 5.747e-06,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    }
+  },
+  {
+    "id": "CB-020",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/device",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "rsync查询设备",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/device/{device_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 2,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": [
+          {
+            "id": 1,
+            "name": "SMB-Server-1",
+            "port": 445,
+            "type": 0,
+            "rsync_mode": 0,
+            "ip": "10.18.8.11",
+            "user": "bbs",
+            "createTime": 1781695804,
+            "online_status": true
+          },
+          {
+            "id": 3,
+            "name": "Rsync-Server-1",
+            "port": 873,
+            "type": 1,
+            "rsync_mode": 2,
+            "ip": "10.18.8.11",
+            "user": "demo",
+            "createTime": 1781695857,
+            "online_status": true
+          },
+          {
+            "id": 4,
+            "name": "SMB-Server-2",
+            "port": 445,
+            "type": 0,
+            "rsync_mode": 0,
+            "ip": "10.18.8.155",
+            "user": "demo",
+            "createTime": 1782268209,
+            "online_status": true
+          },
+          {
+            "id": 5,
+            "name": "Rsync-Server-2",
+            "port": 873,
+            "type": 1,
+            "rsync_mode": 2,
+            "ip": "10.18.8.155",
+            "user": "demo",
+            "createTime": 1782273755,
+            "online_status": true
+          }
+        ],
+        "time": 3.84e-06,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    }
+  },
+  {
+    "id": "CB-021",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/device",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "SMB添加设备",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/device",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {
+      "name": "SMB-Server-2",
+      "port": 445,
+      "type": 0,
+      "ip": "10.18.8.155",
+      "user": "demo",
+      "password": "Admin123"
+    }
+  },
+  {
+    "id": "CB-022",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/device",
+    "method": "DELETE",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "删除设备",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. DELETE /file/FileServer/device/{device_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "path_params": {
+      "device_ids": "5"
+    },
+    "body": {
+      "device_ids": [
+        4
+      ]
+    }
+  },
+  {
+    "id": "CB-023",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/device/readDir",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "读取设备备份源目录",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/device/readDir",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {
+      "path": "",
+      "id": 4
+    }
+  },
+  {
+    "id": "CB-024",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "创建SMB备份任务【增量模式】",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/login",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 75,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": {
+          "id": 6,
+          "device_id": 4,
+          "name": "SMB-Task-2",
+          "backup_mode": 0,
+          "rsync_compress": false,
+          "rsync_whole_file": false,
+          "source": [
+            {
+              "root": "/demo",
+              "selections": [
+                {
+                  "selected": ".",
+                  "filtered": []
+                }
+              ]
+            }
+          ],
+          "destination": "/Volume1/public/z",
+          "scheduled_task": {
+            "is_enabled": false,
+            "timed_task": {
+              "cycle_type": "EveryDay",
+              "cycle_weeks_range": "0,1,2,3,4,5,6",
+              "cycle_date": "24",
+              "schedule_time": "2026-06-24",
+              "frequency_type": "Disabled",
+              "frequency_value": 0,
+              "hour": 0,
+              "minute": 0
+            }
+          },
+          "version_strategy": {
+            "is_enabled": false,
+            "max_num": 2
+          },
+          "state": {
+            "start_time": "0001-01-01T00:00:00Z",
+            "complete_time": "0001-01-01T00:00:00Z",
+            "no_changed_file_total": 0,
+            "files_total": 0,
+            "total_file_size": 0,
+            "new_files_num": 0,
+            "total_size_new_files": 0,
+            "success_files_num": 0,
+            "success_file_total_size": 0,
+            "backup_status": 0
+          }
+        },
+        "time": 0.071926255,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "destination": "/Volume1/public/z",
+      "device_id": 4,
+      "backup_mode": 0,
+      "scheduled_task": {
+        "is_enabled": false,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 0,
+          "minute": 0
+        }
+      },
+      "source": [
+        {
+          "root": "/demo",
+          "selections": [
+            {
+              "selected": ".",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "name": "SMB-Task-2",
+      "version_strategy": {
+        "is_enabled": false,
+        "max_num": 2
+      },
+      "rsync_compress": false,
+      "rsync_whole_file": false
+    }
+  },
+  {
+    "id": "CB-025",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "版本管理",
+    "title": "创建SMB备份任务【镜像模式】",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/login/",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {
+      "destination": "/Volume1/public/j",
+      "device_id": 4,
+      "backup_mode": 1,
+      "scheduled_task": {
+        "is_enabled": false,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 0,
+          "minute": 0
+        }
+      },
+      "source": [
+        {
+          "root": "/demo",
+          "selections": [
+            {
+              "selected": ".",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "name": "SMB-Task-4",
+      "version_strategy": {
+        "is_enabled": false,
+        "max_num": 2
+      },
+      "rsync_compress": false,
+      "rsync_whole_file": false
+    }
+  },
+  {
+    "id": "CB-026",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "创建SMB备份任务【多版本模式】",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. PUT /file/FileServer/login/{login_id}/edit",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {
+      "destination": "/Volume1/public/d",
+      "device_id": 4,
+      "backup_mode": 2,
+      "scheduled_task": {
+        "is_enabled": false,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 0,
+          "minute": 0
+        }
+      },
+      "source": [
+        {
+          "root": "/demo",
+          "selections": [
+            {
+              "selected": ".",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "name": "SMB-Task-3",
+      "version_strategy": {
+        "is_enabled": false,
+        "max_num": 2
+      },
+      "rsync_compress": false,
+      "rsync_whole_file": false
+    },
+    "path_params": {
+      "login_id": ""
+    }
+  },
+  {
+    "id": "CB-027",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task",
+    "method": "DELETE",
+    "priority": "P2",
+    "feature": "版本管理",
+    "title": "删除备份任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/login_state/{login_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {
+      "ids": [
+        6
+      ]
+    },
+    "path_params": {
+      "login_id": ""
+    }
+  },
+  {
+    "id": "CB-028",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "查询备份任务列表",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/backup_task",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 4,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": [
+          {
+            "id": 1,
+            "device_id": 3,
+            "name": "Rsync-Task-1",
+            "backup_mode": 2,
+            "rsync_compress": true,
+            "rsync_whole_file": true,
+            "source": [
+              {
+                "root": "/public",
+                "selections": [
+                  {
+                    "selected": "LLL/2026-06-03_094303/public/debug_log",
+                    "filtered": []
+                  }
+                ]
+              }
+            ],
+            "destination": "/Volume1/public/ll",
+            "scheduled_task": {
+              "is_enabled": false,
+              "timed_task": {
+                "cycle_type": "EveryDay",
+                "cycle_weeks_range": "0,1,2,3,4,5,6",
+                "cycle_date": "17",
+                "schedule_time": "2026-06-17",
+                "frequency_type": "Disabled",
+                "frequency_value": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            },
+            "version_strategy": {
+              "is_enabled": false,
+              "max_num": 2
+            },
+            "state": {
+              "start_time": 1781699865,
+              "complete_time": 1781699884,
+              "no_changed_file_total": 0,
+              "files_total": 0,
+              "total_file_size": 0,
+              "new_files_num": 0,
+              "total_size_new_files": 0,
+              "success_files_num": 0,
+              "success_file_total_size": 0,
+              "backup_status": 1,
+              "human_speed": "",
+              "current_percent": 0,
+              "seconds_left": 0
+            },
+            "version_count": 4,
+            "last_version_path": "/Volume1/public/ll/2026-06-17_203745",
+            "next_execution_time": 0,
+            "device_info": {
+              "id": 3,
+              "name": "Rsync-Server-1",
+              "port": 873,
+              "type": 1,
+              "rsync_mode": 2,
+              "rsync_compress": true,
+              "rsync_whole_file": true,
+              "ip": "10.18.8.11",
+              "user": "demo",
+              "password": "QWRtaW4xMjM=",
+              "createTime": 1781695857
+            }
+          },
+          {
+            "id": 2,
+            "device_id": 1,
+            "name": "SMB-Task-1",
+            "backup_mode": 2,
+            "rsync_compress": false,
+            "rsync_whole_file": false,
+            "source": [
+              {
+                "root": "/public",
+                "selections": [
+                  {
+                    "selected": "KKK/2026-06-03_094115/FGit/clone",
+                    "filtered": []
+                  }
+                ]
+              }
+            ],
+            "destination": "/Volume1/public/llk",
+            "scheduled_task": {
+              "is_enabled": false,
+              "timed_task": {
+                "cycle_type": "EveryDay",
+                "cycle_weeks_range": "0,1,2,3,4,5,6",
+                "cycle_date": "17",
+                "schedule_time": "2026-06-17",
+                "frequency_type": "Disabled",
+                "frequency_value": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            },
+            "version_strategy": {
+              "is_enabled": false,
+              "max_num": 2
+            },
+            "state": {
+              "start_time": 1781699843,
+              "complete_time": 1781699867,
+              "no_changed_file_total": 0,
+              "files_total": 5,
+              "total_file_size": 1366595969,
+              "new_files_num": 0,
+              "total_size_new_files": 0,
+              "success_files_num": 5,
+              "success_file_total_size": 1366595969,
+              "backup_status": 1,
+              "human_speed": "",
+              "current_percent": 0,
+              "seconds_left": 0
+            },
+            "version_count": 4,
+            "last_version_path": "/Volume1/public/llk/2026-06-17_203723",
+            "next_execution_time": 0,
+            "device_info": {
+              "id": 1,
+              "name": "SMB-Server-1",
+              "port": 445,
+              "type": 0,
+              "rsync_mode": 0,
+              "rsync_compress": false,
+              "rsync_whole_file": false,
+              "ip": "10.18.8.11",
+              "user": "bbs",
+              "password": "QWRtaW42OTU5",
+              "createTime": 1781695804
+            }
+          },
+          {
+            "id": 4,
+            "device_id": 4,
+            "name": "SMB-Task-4",
+            "backup_mode": 1,
+            "rsync_compress": false,
+            "rsync_whole_file": false,
+            "source": [
+              {
+                "root": "/demo",
+                "selections": [
+                  {
+                    "selected": ".",
+                    "filtered": []
+                  }
+                ]
+              }
+            ],
+            "destination": "/Volume1/public/j",
+            "scheduled_task": {
+              "is_enabled": false,
+              "timed_task": {
+                "cycle_type": "EveryDay",
+                "cycle_weeks_range": "0,1,2,3,4,5,6",
+                "cycle_date": "24",
+                "schedule_time": "2026-06-24",
+                "frequency_type": "Disabled",
+                "frequency_value": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            },
+            "version_strategy": {
+              "is_enabled": false,
+              "max_num": 2
+            },
+            "state": {
+              "start_time": -62135596800,
+              "complete_time": -62135596800,
+              "no_changed_file_total": 0,
+              "files_total": 0,
+              "total_file_size": 0,
+              "new_files_num": 0,
+              "total_size_new_files": 0,
+              "success_files_num": 0,
+              "success_file_total_size": 0,
+              "backup_status": 0,
+              "human_speed": "",
+              "current_percent": 0,
+              "seconds_left": 0
+            },
+            "version_count": 0,
+            "last_version_path": "",
+            "next_execution_time": 0,
+            "device_info": {
+              "id": 4,
+              "name": "SMB-Server-2",
+              "port": 445,
+              "type": 0,
+              "rsync_mode": 0,
+              "rsync_compress": false,
+              "rsync_whole_file": false,
+              "ip": "10.18.8.155",
+              "user": "demo",
+              "password": "QWRtaW4xMjM=",
+              "createTime": 1782268209
+            }
+          },
+          {
+            "id": 5,
+            "device_id": 4,
+            "name": "SMB-Task-3",
+            "backup_mode": 2,
+            "rsync_compress": false,
+            "rsync_whole_file": false,
+            "source": [
+              {
+                "root": "/demo",
+                "selections": [
+                  {
+                    "selected": ".",
+                    "filtered": []
+                  }
+                ]
+              }
+            ],
+            "destination": "/Volume1/public/d",
+            "scheduled_task": {
+              "is_enabled": false,
+              "timed_task": {
+                "cycle_type": "EveryDay",
+                "cycle_weeks_range": "0,1,2,3,4,5,6",
+                "cycle_date": "24",
+                "schedule_time": "2026-06-24",
+                "frequency_type": "Disabled",
+                "frequency_value": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            },
+            "version_strategy": {
+              "is_enabled": false,
+              "max_num": 2
+            },
+            "state": {
+              "start_time": -62135596800,
+              "complete_time": -62135596800,
+              "no_changed_file_total": 0,
+              "files_total": 0,
+              "total_file_size": 0,
+              "new_files_num": 0,
+              "total_size_new_files": 0,
+              "success_files_num": 0,
+              "success_file_total_size": 0,
+              "backup_status": 0,
+              "human_speed": "",
+              "current_percent": 0,
+              "seconds_left": 0
+            },
+            "version_count": 0,
+            "last_version_path": "",
+            "next_execution_time": 0,
+            "device_info": {
+              "id": 4,
+              "name": "SMB-Server-2",
+              "port": 445,
+              "type": 0,
+              "rsync_mode": 0,
+              "rsync_compress": false,
+              "rsync_whole_file": false,
+              "ip": "10.18.8.155",
+              "user": "demo",
+              "password": "QWRtaW4xMjM=",
+              "createTime": 1782268209
+            }
+          },
+          {
+            "id": 6,
+            "device_id": 4,
+            "name": "SMB-Task-2",
+            "backup_mode": 0,
+            "rsync_compress": false,
+            "rsync_whole_file": false,
+            "source": [
+              {
+                "root": "/demo",
+                "selections": [
+                  {
+                    "selected": ".",
+                    "filtered": []
+                  }
+                ]
+              }
+            ],
+            "destination": "/Volume1/public/z",
+            "scheduled_task": {
+              "is_enabled": true,
+              "timed_task": {
+                "cycle_type": "EveryDay",
+                "cycle_weeks_range": "0,1,2,3,4,5,6",
+                "cycle_date": "24",
+                "schedule_time": "2026-06-24",
+                "frequency_type": "Disabled",
+                "frequency_value": 0,
+                "hour": 0,
+                "minute": 0
+              }
+            },
+            "version_strategy": {
+              "is_enabled": false,
+              "max_num": 2
+            },
+            "state": {
+              "start_time": -62135596800,
+              "complete_time": -62135596800,
+              "no_changed_file_total": 0,
+              "files_total": 0,
+              "total_file_size": 0,
+              "new_files_num": 0,
+              "total_size_new_files": 0,
+              "success_files_num": 0,
+              "success_file_total_size": 0,
+              "backup_status": 0,
+              "human_speed": "",
+              "current_percent": 0,
+              "seconds_left": 0
+            },
+            "version_count": 0,
+            "last_version_path": "",
+            "next_execution_time": 1782316800,
+            "device_info": {
+              "id": 4,
+              "name": "SMB-Server-2",
+              "port": 445,
+              "type": 0,
+              "rsync_mode": 0,
+              "rsync_compress": false,
+              "rsync_whole_file": false,
+              "ip": "10.18.8.155",
+              "user": "demo",
+              "password": "QWRtaW4xMjM=",
+              "createTime": 1782268209
+            }
+          }
+        ],
+        "time": 0.000191381,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    }
+  },
+  {
+    "id": "CB-029",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/{task_id}",
+    "method": "PUT",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "编辑SMB备份任务【增量备份】",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/backup_task/{task_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 73,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.068001184,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "path_params": {
+      "task_id": "6"
+    },
+    "body": {
+      "id": 6,
+      "name": "SMB-Task-2",
+      "device_id": 4,
+      "backup_mode": 0,
+      "source": [
+        {
+          "root": "/demo",
+          "selections": [
+            {
+              "selected": ".",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "destination": "/Volume1/public/z",
+      "scheduled_task": {
+        "is_enabled": true,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 3,
+          "minute": 0
+        }
+      },
+      "version_strategy": {
+        "is_enabled": false,
+        "max_num": 2
+      },
+      "rsync_compress": false,
+      "rsync_whole_file": false
+    }
+  },
+  {
+    "id": "CB-030",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/{task_id}",
+    "method": "PUT",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "编辑SMB备份任务【镜像备份】",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/backup_task",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 75,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.070983601,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "id": 4,
+      "name": "SMB-Task-4",
+      "device_id": 4,
+      "backup_mode": 1,
+      "source": [
+        {
+          "root": "/demo",
+          "selections": [
+            {
+              "selected": ".",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "destination": "/Volume1/public/j",
+      "scheduled_task": {
+        "is_enabled": true,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 0,
+          "minute": 0
+        }
+      },
+      "version_strategy": {
+        "is_enabled": false,
+        "max_num": 2
+      },
+      "rsync_compress": false,
+      "rsync_whole_file": false
+    },
+    "path_params": {
+      "task_id": "4"
+    }
+  },
+  {
+    "id": "CB-031",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/{task_id}",
+    "method": "PUT",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "编辑SMB备份任务【多版本备份】",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. PUT /file/FileServer/task/{task_id}/edit",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 72,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.068726992,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "id": 5,
+      "name": "SMB-Task-3",
+      "device_id": 4,
+      "backup_mode": 2,
+      "source": [
+        {
+          "root": "/demo",
+          "selections": [
+            {
+              "selected": ".",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "destination": "/Volume1/public/d",
+      "scheduled_task": {
+        "is_enabled": false,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 0,
+          "minute": 0
+        }
+      },
+      "version_strategy": {
+        "is_enabled": true,
+        "max_num": 5
+      },
+      "rsync_compress": false,
+      "rsync_whole_file": false
+    },
+    "path_params": {
+      "task_id": "5"
+    }
+  },
+  {
+    "id": "CB-032",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/start",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "启动备份任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/task/{task_id}/start",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 9,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.0066631,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "ids": [
+        9
+      ]
+    },
+    "path_params": {
+      "task_id": ""
+    }
+  },
+  {
+    "id": "CB-033",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/stop",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "停止备份任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/task/{task_id}/stop",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 5,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 9.5666e-05,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "ids": [
+        6
+      ]
+    },
+    "path_params": {
+      "task_id": ""
+    }
+  },
+  {
+    "id": "CB-034",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "创建rsync备份任务【增量模式】",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/backup_task/start",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 100,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": {
+          "id": 7,
+          "device_id": 5,
+          "name": "Rsync-Task-2",
+          "backup_mode": 0,
+          "rsync_compress": true,
+          "rsync_whole_file": true,
+          "source": [
+            {
+              "root": "/FFF",
+              "selections": [
+                {
+                  "selected": "排序/名称排序",
+                  "filtered": []
+                },
+                {
+                  "selected": "排序/图片格式",
+                  "filtered": []
+                }
+              ]
+            }
+          ],
+          "destination": "/Volume1/public/zz",
+          "scheduled_task": {
+            "is_enabled": false,
+            "timed_task": {
+              "cycle_type": "EveryDay",
+              "cycle_weeks_range": "0,1,2,3,4,5,6",
+              "cycle_date": "24",
+              "schedule_time": "2026-06-24",
+              "frequency_type": "Disabled",
+              "frequency_value": 0,
+              "hour": 0,
+              "minute": 0
+            }
+          },
+          "version_strategy": {
+            "is_enabled": false,
+            "max_num": 2
+          },
+          "state": {
+            "start_time": "0001-01-01T00:00:00Z",
+            "complete_time": "0001-01-01T00:00:00Z",
+            "no_changed_file_total": 0,
+            "files_total": 0,
+            "total_file_size": 0,
+            "new_files_num": 0,
+            "total_size_new_files": 0,
+            "success_files_num": 0,
+            "success_file_total_size": 0,
+            "backup_status": 0
+          }
+        },
+        "time": 0.097243745,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "destination": "/Volume1/public/zz",
+      "device_id": 5,
+      "backup_mode": 0,
+      "scheduled_task": {
+        "is_enabled": false,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 0,
+          "minute": 0
+        }
+      },
+      "source": [
+        {
+          "root": "/FFF",
+          "selections": [
+            {
+              "selected": "排序/名称排序",
+              "filtered": []
+            },
+            {
+              "selected": "排序/图片格式",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "name": "Rsync-Task-2",
+      "version_strategy": {
+        "is_enabled": false,
+        "max_num": 2
+      },
+      "rsync_compress": true,
+      "rsync_whole_file": true
+    }
+  },
+  {
+    "id": "CB-035",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "创建rsync备份任务【镜像模式】",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/backup_task/stop",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 87,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": {
+          "id": 8,
+          "device_id": 5,
+          "name": "Rsync-Task-3",
+          "backup_mode": 1,
+          "rsync_compress": true,
+          "rsync_whole_file": true,
+          "source": [
+            {
+              "root": "/FFF",
+              "selections": [
+                {
+                  "selected": "排序",
+                  "filtered": []
+                }
+              ]
+            }
+          ],
+          "destination": "/Volume1/public/jj",
+          "scheduled_task": {
+            "is_enabled": false,
+            "timed_task": {
+              "cycle_type": "EveryDay",
+              "cycle_weeks_range": "0,1,2,3,4,5,6",
+              "cycle_date": "24",
+              "schedule_time": "2026-06-24",
+              "frequency_type": "Disabled",
+              "frequency_value": 0,
+              "hour": 0,
+              "minute": 0
+            }
+          },
+          "version_strategy": {
+            "is_enabled": false,
+            "max_num": 2
+          },
+          "state": {
+            "start_time": "0001-01-01T00:00:00Z",
+            "complete_time": "0001-01-01T00:00:00Z",
+            "no_changed_file_total": 0,
+            "files_total": 0,
+            "total_file_size": 0,
+            "new_files_num": 0,
+            "total_size_new_files": 0,
+            "success_files_num": 0,
+            "success_file_total_size": 0,
+            "backup_status": 0
+          }
+        },
+        "time": 0.084354757,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "destination": "/Volume1/public/jj",
+      "device_id": 5,
+      "backup_mode": 1,
+      "scheduled_task": {
+        "is_enabled": false,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 0,
+          "minute": 0
+        }
+      },
+      "source": [
+        {
+          "root": "/FFF",
+          "selections": [
+            {
+              "selected": "排序",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "name": "Rsync-Task-3",
+      "version_strategy": {
+        "is_enabled": false,
+        "max_num": 2
+      },
+      "rsync_compress": true,
+      "rsync_whole_file": true
+    }
+  },
+  {
+    "id": "CB-036",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "创建rsync备份任务【多版本模式】",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/backup_task/import",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 152,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": {
+          "id": 9,
+          "device_id": 5,
+          "name": "Rsync-Task-4",
+          "backup_mode": 2,
+          "rsync_compress": true,
+          "rsync_whole_file": true,
+          "source": [
+            {
+              "root": "/FFF",
+              "selections": [
+                {
+                  "selected": "排序",
+                  "filtered": [
+                    "排序/大小排序",
+                    "排序/时间排序",
+                    "排序/类型排序",
+                    "排序/音频格式",
+                    "排序/默认排序"
+                  ]
+                }
+              ]
+            }
+          ],
+          "destination": "/Volume1/public/dd",
+          "scheduled_task": {
+            "is_enabled": false,
+            "timed_task": {
+              "cycle_type": "EveryDay",
+              "cycle_weeks_range": "0,1,2,3,4,5,6",
+              "cycle_date": "24",
+              "schedule_time": "2026-06-24",
+              "frequency_type": "Disabled",
+              "frequency_value": 0,
+              "hour": 0,
+              "minute": 0
+            }
+          },
+          "version_strategy": {
+            "is_enabled": true,
+            "max_num": 2
+          },
+          "state": {
+            "start_time": "0001-01-01T00:00:00Z",
+            "complete_time": "0001-01-01T00:00:00Z",
+            "no_changed_file_total": 0,
+            "files_total": 0,
+            "total_file_size": 0,
+            "new_files_num": 0,
+            "total_size_new_files": 0,
+            "success_files_num": 0,
+            "success_file_total_size": 0,
+            "backup_status": 0
+          }
+        },
+        "time": 0.149228726,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "destination": "/Volume1/public/dd",
+      "device_id": 5,
+      "backup_mode": 2,
+      "scheduled_task": {
+        "is_enabled": false,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 0,
+          "minute": 0
+        }
+      },
+      "source": [
+        {
+          "root": "/FFF",
+          "selections": [
+            {
+              "selected": "排序",
+              "filtered": [
+                "排序/大小排序",
+                "排序/时间排序",
+                "排序/类型排序",
+                "排序/音频格式",
+                "排序/默认排序"
+              ]
+            }
+          ]
+        }
+      ],
+      "name": "Rsync-Task-4",
+      "version_strategy": {
+        "is_enabled": true,
+        "max_num": 2
+      },
+      "rsync_compress": true,
+      "rsync_whole_file": true
+    }
+  },
+  {
+    "id": "CB-037",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/versions/{task_id}",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "查询SMB多版本备份任务版本",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/backup_task/versions/{task_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 3,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": [
+          {
+            "task_id": 0,
+            "id": 1,
+            "create_time": 1781695962,
+            "complete_time": 1781695962,
+            "status": 1,
+            "local_file": "/Volume1/public/llk/2026-06-17_193242",
+            "is_lock": false
+          },
+          {
+            "task_id": 0,
+            "id": 2,
+            "create_time": 1781697125,
+            "complete_time": 1781697125,
+            "status": 1,
+            "local_file": "/Volume1/public/llk/2026-06-17_195205",
+            "is_lock": false
+          },
+          {
+            "task_id": 0,
+            "id": 3,
+            "create_time": 1781699578,
+            "complete_time": 1781699578,
+            "status": 1,
+            "local_file": "/Volume1/public/llk/2026-06-17_203258",
+            "is_lock": false
+          },
+          {
+            "task_id": 0,
+            "id": 4,
+            "create_time": 1781699843,
+            "complete_time": 1781699867,
+            "status": 1,
+            "local_file": "/Volume1/public/llk/2026-06-17_203723",
+            "is_lock": false
+          },
+          {
+            "task_id": 0,
+            "id": 5,
+            "create_time": 1782273327,
+            "complete_time": 1782273328,
+            "status": 1,
+            "local_file": "/Volume1/public/llk/2026-06-24_115527",
+            "is_lock": false
+          }
+        ],
+        "time": 1.2768e-05,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "path_params": {
+      "task_id": "2"
+    }
+  },
+  {
+    "id": "CB-038",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/versions/{task_id}",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "版本管理",
+    "title": "查询rsync多版本备份任务版本",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/version/{ver_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 3,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": [
+          {
+            "task_id": 0,
+            "id": 1,
+            "create_time": 1782273233,
+            "complete_time": 1782273233,
+            "status": 1,
+            "local_file": "/Volume1/public/d/2026-06-24_115353",
+            "is_lock": false
+          },
+          {
+            "task_id": 0,
+            "id": 3,
+            "create_time": 1782273362,
+            "complete_time": 1782273371,
+            "status": 4,
+            "local_file": "/Volume1/public/d/2026-06-24_115602",
+            "is_lock": false
+          },
+          {
+            "task_id": 0,
+            "id": 4,
+            "create_time": 1782273468,
+            "complete_time": 1782273468,
+            "status": 1,
+            "local_file": "/Volume1/public/d/2026-06-24_115748",
+            "is_lock": false
+          }
+        ],
+        "time": 1.2592e-05,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "path_params": {
+      "task_id": "5"
+    }
+  },
+  {
+    "id": "CB-039",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/versions/delete",
+    "method": "DELETE",
+    "priority": "P2",
+    "feature": "版本管理",
+    "title": "删除任务备份版本",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/version/delete",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 123,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.120703935,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "task_id": 5,
+      "ver_id": 4
+    }
+  },
+  {
+    "id": "CB-040",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/import",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "导入备份数据（SMB)",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/version/set_version_locked",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 37,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.03486164,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "path": "/Volume1/public/CentralizedBackup",
+      "device_type": 0
+    }
+  },
+  {
+    "id": "CB-041",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/versions/lock",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "解锁备份版本",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/backup_task/versions/delete",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 69,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.065921975,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "locked": false,
+      "task_id": 5,
+      "ver_id": 3
+    }
+  },
+  {
+    "id": "CB-042",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/versions/lock",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "锁定备份版本",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/backup_task/versions/lock",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 65,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.061934293,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "locked": true,
+      "task_id": 5,
+      "ver_id": 3
+    }
+  },
+  {
+    "id": "CB-043",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/restore_task",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "查询还原任务列表",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/restore_task",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 3,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": [
+          {
+            "id": 1,
+            "name": "SMB-Task-2",
+            "backup_task_id": 6,
+            "source": [
+              {
+                "root": "/Volume1/public/z",
+                "selections": [
+                  {
+                    "selected": "public/CentralizedBackup",
+                    "filtered": []
+                  }
+                ]
+              }
+            ],
+            "dest": "/FFF",
+            "state": {
+              "start_time": -62135596800,
+              "complete_time": -62135596800,
+              "files_total": 0,
+              "total_file_size": 0,
+              "new_files_num": 0,
+              "success_files_num": 0,
+              "success_file_total_size": 0,
+              "backup_status": 0,
+              "human_speed": "",
+              "current_percent": 0,
+              "seconds_left": 0
+            },
+            "device": {
+              "id": 4,
+              "name": "SMB-Server-2",
+              "port": 445,
+              "type": 0,
+              "rsync_mode": 0,
+              "rsync_compress": false,
+              "rsync_whole_file": false,
+              "ip": "10.18.8.155",
+              "user": "demo",
+              "password": "QWRtaW4xMjM=",
+              "createTime": 1782268209
+            }
+          },
+          {
+            "id": 2,
+            "name": "SMB-Task-3",
+            "backup_task_id": 5,
+            "source": [
+              {
+                "root": "/Volume1/public/d/2026-06-24_115353",
+                "selections": [
+                  {
+                    "selected": "/.",
+                    "filtered": []
+                  }
+                ]
+              }
+            ],
+            "dest": "/FFF",
+            "state": {
+              "start_time": -62135596800,
+              "complete_time": -62135596800,
+              "files_total": 0,
+              "total_file_size": 0,
+              "new_files_num": 0,
+              "success_files_num": 0,
+              "success_file_total_size": 0,
+              "backup_status": 0,
+              "human_speed": "",
+              "current_percent": 0,
+              "seconds_left": 0
+            },
+            "device": {
+              "id": 4,
+              "name": "SMB-Server-2",
+              "port": 445,
+              "type": 0,
+              "rsync_mode": 0,
+              "rsync_compress": false,
+              "rsync_whole_file": false,
+              "ip": "10.18.8.155",
+              "user": "demo",
+              "password": "QWRtaW4xMjM=",
+              "createTime": 1782268209
+            }
+          },
+          {
+            "id": 3,
+            "name": "SMB-Task-2",
+            "backup_task_id": 6,
+            "source": [
+              {
+                "root": "/Volume1/public/z",
+                "selections": [
+                  {
+                    "selected": "public/CentralizedBackup",
+                    "filtered": []
+                  }
+                ]
+              }
+            ],
+            "dest": "/FFF",
+            "state": {
+              "start_time": -62135596800,
+              "complete_time": -62135596800,
+              "files_total": 0,
+              "total_file_size": 0,
+              "new_files_num": 0,
+              "success_files_num": 0,
+              "success_file_total_size": 0,
+              "backup_status": 0,
+              "human_speed": "",
+              "current_percent": 0,
+              "seconds_left": 0
+            },
+            "device": {
+              "id": 4,
+              "name": "SMB-Server-2",
+              "port": 445,
+              "type": 0,
+              "rsync_mode": 0,
+              "rsync_compress": false,
+              "rsync_whole_file": false,
+              "ip": "10.18.8.155",
+              "user": "demo",
+              "password": "QWRtaW4xMjM=",
+              "createTime": 1782268209
+            }
+          },
+          {
+            "id": 4,
+            "name": "SMB-Task-3",
+            "backup_task_id": 5,
+            "source": [
+              {
+                "root": "/Volume1/public/d/2026-06-24_115353",
+                "selections": [
+                  {
+                    "selected": "/.",
+                    "filtered": []
+                  }
+                ]
+              }
+            ],
+            "dest": "/FFF",
+            "state": {
+              "start_time": -62135596800,
+              "complete_time": -62135596800,
+              "files_total": 0,
+              "total_file_size": 0,
+              "new_files_num": 0,
+              "success_files_num": 0,
+              "success_file_total_size": 0,
+              "backup_status": 0,
+              "human_speed": "",
+              "current_percent": 0,
+              "seconds_left": 0
+            },
+            "device": {
+              "id": 4,
+              "name": "SMB-Server-2",
+              "port": 445,
+              "type": 0,
+              "rsync_mode": 0,
+              "rsync_compress": false,
+              "rsync_whole_file": false,
+              "ip": "10.18.8.155",
+              "user": "demo",
+              "password": "QWRtaW4xMjM=",
+              "createTime": 1782268209
+            }
+          }
+        ],
+        "time": 4.361e-06,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    }
+  },
+  {
+    "id": "CB-044",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/restore_task",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "创建【增量】还原任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/restore_task/{task_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 54,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": {
+          "id": 3,
+          "name": "SMB-Task-2",
+          "backup_task_id": 6,
+          "source": [
+            {
+              "root": "/Volume1/public/z",
+              "selections": [
+                {
+                  "selected": "public/CentralizedBackup",
+                  "filtered": []
+                }
+              ]
+            }
+          ],
+          "dest": "/FFF",
+          "state": {
+            "StartTime": "0001-01-01T00:00:00Z",
+            "CompleteTime": "0001-01-01T00:00:00Z",
+            "files_total": 0,
+            "total_file_size": 0,
+            "success_files_num": 0,
+            "success_files_total_size": 0,
+            "status": 0
+          },
+          "backup_dst": "/Volume1/public/z",
+          "backup_mode": 0,
+          "device_info": {
+            "id": 4,
+            "name": "SMB-Server-2",
+            "port": 445,
+            "type": 0,
+            "rsync_mode": 0,
+            "rsync_compress": false,
+            "rsync_whole_file": false,
+            "ip": "10.18.8.155",
+            "user": "demo",
+            "password": "QWRtaW4xMjM=",
+            "createTime": 1782268209
+          }
+        },
+        "time": 0.051064224,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "name": "SMB-Task-2",
+      "backup_task_id": 6,
+      "source": [
+        {
+          "root": "/Volume1/public/z",
+          "selections": [
+            {
+              "selected": "public/CentralizedBackup",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "dest": "/FFF"
+    },
+    "path_params": {
+      "task_id": ""
+    }
+  },
+  {
+    "id": "CB-045",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/restore_task",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "还原管理",
+    "title": "创建【多版本】还原任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/restore",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 46,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": {
+          "id": 4,
+          "name": "SMB-Task-3",
+          "backup_task_id": 5,
+          "source": [
+            {
+              "root": "/Volume1/public/d/2026-06-24_115353",
+              "selections": [
+                {
+                  "selected": "/.",
+                  "filtered": []
+                }
+              ]
+            }
+          ],
+          "dest": "/FFF",
+          "state": {
+            "StartTime": "0001-01-01T00:00:00Z",
+            "CompleteTime": "0001-01-01T00:00:00Z",
+            "files_total": 0,
+            "total_file_size": 0,
+            "success_files_num": 0,
+            "success_files_total_size": 0,
+            "status": 0
+          },
+          "backup_dst": "/Volume1/public/d",
+          "backup_mode": 2,
+          "device_info": {
+            "id": 4,
+            "name": "SMB-Server-2",
+            "port": 445,
+            "type": 0,
+            "rsync_mode": 0,
+            "rsync_compress": false,
+            "rsync_whole_file": false,
+            "ip": "10.18.8.155",
+            "user": "demo",
+            "password": "QWRtaW4xMjM=",
+            "createTime": 1782268209
+          }
+        },
+        "time": 0.043185123,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "name": "SMB-Task-3",
+      "backup_task_id": 5,
+      "source": [
+        {
+          "root": "/Volume1/public/d/2026-06-24_115353",
+          "selections": [
+            {
+              "selected": "/.",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "dest": "/FFF"
+    }
+  },
+  {
+    "id": "CB-046",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/restore_task",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "版本管理",
+    "title": "创建【镜像】还原任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/restore/{restore_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 10078,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": {
+          "id": 6,
+          "name": "Rsync-Task-3",
+          "backup_task_id": 8,
+          "source": [
+            {
+              "root": "/Volume1/public/jj",
+              "selections": [
+                {
+                  "selected": "FFF/排序/大小排序",
+                  "filtered": []
+                }
+              ]
+            }
+          ],
+          "dest": "/FFF",
+          "state": {
+            "StartTime": "0001-01-01T00:00:00Z",
+            "CompleteTime": "0001-01-01T00:00:00Z",
+            "files_total": 0,
+            "total_file_size": 0,
+            "success_files_num": 0,
+            "success_files_total_size": 0,
+            "status": 0
+          },
+          "backup_dst": "/Volume1/public/jj",
+          "backup_mode": 1,
+          "device_info": {
+            "id": 5,
+            "name": "Rsync-Server-2",
+            "port": 873,
+            "type": 1,
+            "rsync_mode": 2,
+            "rsync_compress": false,
+            "rsync_whole_file": false,
+            "ip": "10.18.8.155",
+            "user": "demo",
+            "password": "QWRtaW4xMjM=",
+            "createTime": 1782273755
+          }
+        },
+        "time": 10.07497958,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {
+      "name": "Rsync-Task-3",
+      "backup_task_id": 8,
+      "source": [
+        {
+          "root": "/Volume1/public/jj",
+          "selections": [
+            {
+              "selected": "FFF/排序/大小排序",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "dest": "/FFF"
+    },
+    "path_params": {
+      "restore_id": ""
+    }
+  },
+  {
+    "id": "CB-047",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/restore_task/{restore_id}/start",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "还原管理",
+    "title": "启动还原任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/restore/{restore_id}/start",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 22,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.017051252,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {},
+    "path_params": {
+      "restore_id": "3"
+    }
+  },
+  {
+    "id": "CB-048",
+    "module": "FileServer",
+    "path": "/CentralizedBackup/FileServer/restore_task/{restore_id}/stop",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "版本管理",
+    "title": "停止还原任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/restore/{restore_id}/stop",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {},
+    "path_params": {
+      "restore_id": "3"
+    }
+  },
+  {
+    "id": "CB-049",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/restore_task/{restore_id}",
+    "method": "DELETE",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "删除还原任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /file/FileServer/restore_task/{task_id}/start",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 39,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.035904012,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    },
+    "body": {},
+    "path_params": {
+      "restore_id": "5"
+    }
+  },
+  {
+    "id": "CB-051",
+    "module": "FileServer",
+    "path": "/v2/fileManage/CreateFolder",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "新建子文件夹",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/task",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "failed",
+    "latency": 4,
+    "response": {
+      "status_code": 404,
+      "body": {
+        "_status": 404,
+        "_text": "404 page not found"
+      }
+    },
+    "body": {
+      "path": "/Volume1/public/ee",
+      "type": 2
+    }
+  },
+  {
+    "id": "CB-052",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/import",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "导入备份数据（rsync)",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /fileServer/SMB",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {
+      "path": "/Volume1/public/CentralizedBackup",
+      "device_type": 1
+    }
+  },
+  {
+    "id": "CB-053",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/overview",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "版本管理",
+    "title": "文件服务器概览",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /file/FileServer/overview",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "passed",
+    "latency": 3,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": {
+          "device": [
+            {
+              "id": 1,
+              "name": "SMB-Server-1",
+              "ip": "10.18.8.11",
+              "type": 0
+            },
+            {
+              "id": 3,
+              "name": "Rsync-Server-1",
+              "ip": "10.18.8.11",
+              "type": 1
+            },
+            {
+              "id": 4,
+              "name": "SMB-Server-2",
+              "ip": "10.18.8.155",
+              "type": 0
+            },
+            {
+              "id": 5,
+              "name": "Rsync-Server-2",
+              "ip": "10.18.8.155",
+              "type": 1
+            }
+          ],
+          "tasks": [
+            {
+              "id": 1,
+              "name": "Rsync-Task-1",
+              "device": [
+                3
+              ],
+              "status": 1,
+              "progress": {
+                "human_speed": "",
+                "current_percent": 0,
+                "seconds_left": 0
+              },
+              "next_backup": 0,
+              "last_backup": 1781699865,
+              "type": 1
+            },
+            {
+              "id": 2,
+              "name": "SMB-Task-1",
+              "device": [
+                1
+              ],
+              "status": 1,
+              "progress": {
+                "human_speed": "",
+                "current_percent": 0,
+                "seconds_left": 0
+              },
+              "next_backup": 0,
+              "last_backup": 1782273327,
+              "type": 0
+            },
+            {
+              "id": 4,
+              "name": "SMB-Task-4",
+              "device": [
+                4
+              ],
+              "status": 0,
+              "progress": {
+                "human_speed": "",
+                "current_percent": 0,
+                "seconds_left": 0
+              },
+              "next_backup": 1782316800,
+              "last_backup": -62135596800,
+              "type": 0
+            },
+            {
+              "id": 5,
+              "name": "SMB-Task-3",
+              "device": [
+                4
+              ],
+              "status": 1,
+              "progress": {
+                "human_speed": "",
+                "current_percent": 0,
+                "seconds_left": 0
+              },
+              "next_backup": 0,
+              "last_backup": 1782273468,
+              "type": 0
+            },
+            {
+              "id": 6,
+              "name": "SMB-Task-2",
+              "device": [
+                4
+              ],
+              "status": 4,
+              "progress": {
+                "human_speed": "",
+                "current_percent": 0,
+                "seconds_left": 0
+              },
+              "next_backup": 1782327600,
+              "last_backup": 1782273686,
+              "type": 0
+            },
+            {
+              "id": 7,
+              "name": "Rsync-Task-2",
+              "device": [
+                5
+              ],
+              "status": 0,
+              "progress": {
+                "human_speed": "",
+                "current_percent": 0,
+                "seconds_left": 0
+              },
+              "next_backup": 0,
+              "last_backup": -62135596800,
+              "type": 1
+            },
+            {
+              "id": 8,
+              "name": "Rsync-Task-3",
+              "device": [
+                5
+              ],
+              "status": 0,
+              "progress": {
+                "human_speed": "",
+                "current_percent": 0,
+                "seconds_left": 0
+              },
+              "next_backup": 0,
+              "last_backup": -62135596800,
+              "type": 1
+            },
+            {
+              "id": 9,
+              "name": "Rsync-Task-4",
+              "device": [
+                5
+              ],
+              "status": 1,
+              "progress": {
+                "human_speed": "",
+                "current_percent": 0,
+                "seconds_left": 0
+              },
+              "next_backup": 0,
+              "last_backup": 1782281640,
+              "type": 1
+            }
+          ],
+          "versions": [
+            {
+              "id": 1,
+              "status": 1,
+              "time": 1781695936
+            },
+            {
+              "id": 2,
+              "status": 1,
+              "time": 1781695962
+            },
+            {
+              "id": 3,
+              "status": 1,
+              "time": 1781697125
+            },
+            {
+              "id": 4,
+              "status": 1,
+              "time": 1781697140
+            },
+            {
+              "id": 5,
+              "status": 1,
+              "time": 1781699578
+            },
+            {
+              "id": 6,
+              "status": 1,
+              "time": 1781699605
+            },
+            {
+              "id": 7,
+              "status": 1,
+              "time": 1781699867
+            },
+            {
+              "id": 8,
+              "status": 1,
+              "time": 1781699884
+            },
+            {
+              "id": 9,
+              "status": 1,
+              "time": 1782273233
+            },
+            {
+              "id": 10,
+              "status": 1,
+              "time": 1782273310
+            },
+            {
+              "id": 11,
+              "status": 1,
+              "time": 1782273328
+            },
+            {
+              "id": 12,
+              "status": 4,
+              "time": 1782273371
+            },
+            {
+              "id": 13,
+              "status": 1,
+              "time": 1782273468
+            },
+            {
+              "id": 14,
+              "status": 1,
+              "time": 1782273508
+            },
+            {
+              "id": 15,
+              "status": 4,
+              "time": 1782273661
+            },
+            {
+              "id": 16,
+              "status": 4,
+              "time": 1782273691
+            },
+            {
+              "id": 17,
+              "status": 1,
+              "time": 1782281640
+            }
+          ],
+          "log": [
+            {
+              "id": 137,
+              "level": "Info",
+              "time": "2026-06-24T14:21:49.93416838+08:00",
+              "category": "SMB",
+              "user": "demo",
+              "event": "[SMB-Task-3] 任务版本 [2026-06-24_115602] 解锁成功。"
+            },
+            {
+              "id": 136,
+              "level": "Info",
+              "time": "2026-06-24T14:21:32.913664293+08:00",
+              "category": "SMB",
+              "user": "demo",
+              "event": "[SMB-Task-3] 任务版本 [2026-06-24_115602] 锁定成功。"
+            },
+            {
+              "id": 135,
+              "level": "Info",
+              "time": "2026-06-24T14:21:27.068746464+08:00",
+              "category": "SMB",
+              "user": "demo",
+              "event": "[SMB-Task-3] 任务版本 [2026-06-24_115602] 解锁成功。"
+            },
+            {
+              "id": 134,
+              "level": "Info",
+              "time": "2026-06-24T14:18:33.562991212+08:00",
+              "category": "SMB",
+              "user": "demo",
+              "event": "[SMB-Task-3] 任务版本 [2026-06-24_115602] 锁定成功。"
+            },
+            {
+              "id": 133,
+              "level": "Info",
+              "time": "2026-06-24T14:18:16.735465411+08:00",
+              "category": "SMB",
+              "user": "demo",
+              "event": "[SMB-Task-3] 任务版本 [2026-06-24_115748] 删除成功。"
+            }
+          ]
+        },
+        "time": 0.000595654,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    }
+  },
+  {
+    "id": "CB-054",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "查询设备",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/device",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-055",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/{device_id}",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "查询设备",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/device/{device_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-056",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "添加设备",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-057",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/{device_id}",
+    "method": "DELETE",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "删除设备",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. DELETE /VMware/vmware/device/{device_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-058",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/check_resource_is_enough",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "检查资源enough",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/check_resource_is_enough",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-059",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/check_restore_is_support",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "检查还原支持",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/check_restore_is_support",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-060",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/check_vm_is_exist",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "检查虚拟机是否存在",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/check_vm_is_exist",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-061",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/{device_id}/device_status",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "查询设备状态",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/device/{device_id}/device_status",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-062",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/{device_id}/be_linked_task",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "查询linked任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/device/{device_id}/be_linked_task",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-063",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/get_task_devices/",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "查询任务设备",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/get_task_devices/",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-064",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/datacenters/{device_id}",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "查询数据中心",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/device/datacenters/{device_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-065",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/datacenter_clusters",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "查询数据中心集群",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/datacenter_clusters",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-066",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/datacenter_cluster_hosts",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "查询数据中心集群主机",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/datacenter_cluster_hosts",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-067",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/datacenter_cluster_host_vms",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "查询数据中心集群主机虚拟机",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/datacenter_cluster_host_vms",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-068",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/datacenter_folders",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "查询数据中心文件夹",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/datacenter_folders",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-069",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/datacenter_folder_vms",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "查询数据中心文件夹虚拟机",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/datacenter_folder_vms",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-070",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/datacenter_datastores",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "查询数据中心数据存储",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/datacenter_datastores",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-071",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/datacenter_networks",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "查询数据中心网络",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/datacenter_networks",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-072",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/datacenter_vms",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "查询数据中心虚拟机",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/datacenter_vms",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-073",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/device/datacenter_vm",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "查询数据中心虚拟机",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/device/datacenter_vm",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-074",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/vm_list",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "虚拟机查询",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vm_list",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-075",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "查询任务列表",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/task",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-076",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/{task_id}",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "查询任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/task/{task_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-077",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "添加任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/task",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-078",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/import",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "导入任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/task/import",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-079",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/{task_id}/start",
+    "method": "PUT",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "启动任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. PUT /VMware/vmware/task/{task_id}/start",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-080",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/{task_id}/stop",
+    "method": "PUT",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "停止任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. PUT /VMware/vmware/task/{task_id}/stop",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-081",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/check_dest_folder",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "检查dest文件夹",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/task/check_dest_folder",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-082",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/check_vm_service",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "检查虚拟机service",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/task/check_vm_service",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-083",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/get_disk_partitions",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "查询磁盘partitions",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/task/get_disk_partitions",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-084",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/get_partition_system",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "查询分区系统",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/task/get_partition_system",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-085",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/get_task_ver_vms",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "查询任务版本虚拟机",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/task/get_task_ver_vms",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-086",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/version/{task_id}",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "查询版本",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/task/version/{task_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-087",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/version",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "查询版本",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/task/version",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-088",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/task/version/set_ver_locked",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "设置版本锁定状态",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /VMware/vmware/task/version/set_ver_locked",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-089",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/restore_task",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "查询还原任务列表",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/restore_task",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-090",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/restore_task/{task_id}",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "任务管理",
+    "title": "查询还原任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/restore_task/{task_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-091",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/restore_task/{task_id}/start",
+    "method": "PUT",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "启动还原任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. PUT /VMware/vmware/restore_task/{task_id}/start",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-092",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/restore_task/{task_id}/stop",
+    "method": "PUT",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "停止还原任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. PUT /VMware/vmware/restore_task/{task_id}/stop",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-093",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/restore_task/{task_id}",
+    "method": "DELETE",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "删除还原任务",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. DELETE /VMware/vmware/restore_task/{task_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-094",
+    "module": "VMware",
+    "path": "/v2/proxy2/CentralizedBackup/vmware/overview",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "版本管理",
+    "title": "概览",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /VMware/vmware/overview",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-095",
+    "module": "TOS",
+    "path": "/v2/lang/CentralizedBackup",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "语言",
+    "title": "查询语言",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /v2/lang/CentralizedBackup",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-096",
+    "module": "TOS",
+    "path": "/v2/app/version/CentralizedBackup",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "版本管理",
+    "title": "查询应用版本",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /v2/app/version/CentralizedBackup",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-097",
+    "module": "TOS",
+    "path": "/v2/app/version/{app_id}",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "版本管理",
+    "title": "查询版本generic",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /v2/app/version/{app_id}",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-098",
+    "module": "TOS",
+    "path": "/v2/person/desktopDisplay",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "桌面显示",
+    "title": "查询桌面显示",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /v2/person/desktopDisplay",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-099",
+    "module": "TOS",
+    "path": "/v2/fileManage/CreateFolder",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "文件管理",
+    "title": "创建文件夹",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /v2/fileManage/CreateFolder",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-100",
+    "module": "TOS",
+    "path": "/v2/fileManage/folderInfo",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "文件管理",
+    "title": "查询文件夹info",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /v2/fileManage/folderInfo",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-101",
+    "module": "TOS",
+    "path": "/v2/fileManage/homeList",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "文件管理",
+    "title": "查询主目录查询",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /v2/fileManage/homeList",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-102",
+    "module": "TOS",
+    "path": "/v2/folder/list",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "文件管理",
+    "title": "pc/server查询备份目的地文件夹",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /v2/folder/list",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-103",
+    "module": "TOS",
+    "path": "/v2/storage/list/volume",
+    "method": "GET",
+    "priority": "P1",
+    "feature": "存储卷",
+    "title": "查询卷",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. GET /v2/storage/list/volume",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-104",
+    "module": "TOS",
+    "path": "/v2/updaterestore/reinstallSystem",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "还原任务",
+    "title": "重装系统",
+    "preconditions": "已登录TOS，CentralizedBackup应用已安装",
+    "steps": "1. POST /v2/updaterestore/reinstallSystem",
+    "expected": "返回200，code=true",
+    "remark": "",
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-106",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}/volumes",
+    "method": "GET",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "设备自定义卷模式获取卷分区信息",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57"
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-107",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}/task",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "创建【仅系统】备份任务",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57"
+    },
+    "body": {
+      "name": "Win-PC-Task-3",
+      "device": "00:0c:29:59:f4:57",
+      "type": 2,
+      "dst_path": "/Volume1/public",
+      "volumes": [
+        ""
+      ],
+      "max_version": 2,
+      "keep_all": true,
+      "schedule_enable": false,
+      "schedule": {
+        "cycle_type": "EveryDay",
+        "cycle_weeks_range": "0,1,2,3,4,5,6",
+        "cycle_date": "23",
+        "schedule_time": "2026-06-23",
+        "frequency_type": "Disabled",
+        "frequency_value": 0,
+        "hour": 0,
+        "minute": 0
+      },
+      "auto_awake": true,
+      "sleep_avoid": true,
+      "backup_external_disk": true
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-108",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}/task",
+    "method": "POST",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "创建【自定义卷】备份任务",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57"
+    },
+    "body": {
+      "name": "Win-PC-Task-5",
+      "device": "00:0c:29:59:f4:57",
+      "type": 1,
+      "dst_path": "/Volume1/public",
+      "volumes": [
+        "C"
+      ],
+      "max_version": 2,
+      "keep_all": true,
+      "schedule_enable": false,
+      "schedule": {
+        "cycle_type": "EveryDay",
+        "cycle_weeks_range": "0,1,2,3,4,5,6",
+        "cycle_date": "23",
+        "schedule_time": "2026-06-23",
+        "frequency_type": "Disabled",
+        "frequency_value": 0,
+        "hour": 0,
+        "minute": 0
+      },
+      "auto_awake": true,
+      "sleep_avoid": true,
+      "backup_external_disk": true
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-109",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}/tasks/{task_id}/versions",
+    "method": "GET",
+    "priority": "P2",
+    "feature": "版本管理",
+    "title": "获取任务版本信息",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57",
+      "task_id": "11"
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-110",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}/tasks/{task_id}/versions/{version_id}",
+    "method": "POST",
+    "priority": "P3",
+    "feature": "版本管理",
+    "title": "给任务版本上锁",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57",
+      "task_id": "11",
+      "version_id": "2026-06-23_222953"
+    },
+    "body": {
+      "Locked": true
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-111",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}/tasks/{task_id}/versions/{version_id}",
+    "method": "POST",
+    "priority": "P3",
+    "feature": "版本管理",
+    "title": "给任务版本解锁",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57",
+      "task_id": "11",
+      "version_id": "2026-06-23_222953"
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {
+      "Locked": false
+    }
+  },
+  {
+    "id": "CB-112",
+    "module": "PC/Server",
+    "path": "/v2/proxy/CentralizedBackup/devices/{device_id}/tasks/{task_id}/versions/{version_id}",
+    "method": "DELETE",
+    "priority": "P3",
+    "feature": "版本管理",
+    "title": "删除任务备份版本",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "path_params": {
+      "device_id": "00:0c:29:59:f4:57",
+      "task_id": "11",
+      "version_id": "2026-06-23_222953"
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null,
+    "body": {}
+  },
+  {
+    "id": "CB-113",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/device",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "rsync【普通模式】添加设备",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "body": {
+      "name": "Rsync-Server-2",
+      "port": 873,
+      "type": 1,
+      "rsync_mode": 2,
+      "ip": "10.18.8.155",
+      "user": "demo",
+      "password": "Admin123"
+    },
+    "status": "passed",
+    "latency": 216,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.21186001,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    }
+  },
+  {
+    "id": "CB-114",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/device",
+    "method": "POST",
+    "priority": "P1",
+    "feature": "设备管理",
+    "title": "rsync【加密模式】添加设备",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "body": {
+      "name": "Rsync-Server-2",
+      "port": 9222,
+      "type": 1,
+      "rsync_mode": 1,
+      "ip": "10.18.8.155",
+      "user": "demo",
+      "password": "Admin123"
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-115",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/device",
+    "method": "PUT",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "SMB编辑设备",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "body": {
+      "id": 4,
+      "name": "SMB-Server-211",
+      "createTime": 1782266932,
+      "port": 445,
+      "type": 0,
+      "ip": "10.18.8.155",
+      "user": "demo",
+      "password": "Admin123"
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-116",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/device",
+    "method": "PUT",
+    "priority": "P2",
+    "feature": "设备管理",
+    "title": "rsync编辑设备",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "body": {
+      "id": 5,
+      "name": "Rsync-Server-211",
+      "createTime": 1782267160,
+      "port": 9222,
+      "type": 1,
+      "rsync_mode": 1,
+      "ip": "10.18.8.155",
+      "user": "demo",
+      "password": "Admin123"
+    },
+    "status": "pending",
+    "latency": 0,
+    "response": null
+  },
+  {
+    "id": "CB-117",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/{task_id}",
+    "method": "PUT",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "编辑rsync备份任务【增量模式】",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "body": {
+      "id": 7,
+      "name": "Rsync-Task-2",
+      "device_id": 5,
+      "backup_mode": 0,
+      "source": [
+        {
+          "root": "/FFF",
+          "selections": [
+            {
+              "selected": "排序/名称排序",
+              "filtered": []
+            },
+            {
+              "selected": "排序/图片格式",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "destination": "/Volume1/public/zz",
+      "scheduled_task": {
+        "is_enabled": true,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 0,
+          "minute": 0
+        }
+      },
+      "version_strategy": {
+        "is_enabled": false,
+        "max_num": 2
+      },
+      "rsync_compress": true,
+      "rsync_whole_file": true
+    },
+    "path_params": {
+      "task_id": "7"
+    }
+  },
+  {
+    "id": "CB-118",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/{task_id}",
+    "method": "PUT",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "编辑rsync备份任务【镜像模式】",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "path_params": {
+      "task_id": "8"
+    },
+    "body": {
+      "id": 8,
+      "name": "Rsync-Task-3",
+      "device_id": 5,
+      "backup_mode": 1,
+      "source": [
+        {
+          "root": "/FFF",
+          "selections": [
+            {
+              "selected": "排序",
+              "filtered": []
+            }
+          ]
+        }
+      ],
+      "destination": "/Volume1/public/jj",
+      "scheduled_task": {
+        "is_enabled": true,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 0,
+          "minute": 0
+        }
+      },
+      "version_strategy": {
+        "is_enabled": false,
+        "max_num": 2
+      },
+      "rsync_compress": true,
+      "rsync_whole_file": true
+    },
+    "status": "passed",
+    "latency": 83,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.080118127,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    }
+  },
+  {
+    "id": "CB-119",
+    "module": "FileServer",
+    "path": "/v2/proxy2/CentralizedBackup/FileServer/backup_task/{task_id}",
+    "method": "PUT",
+    "priority": "P2",
+    "feature": "任务管理",
+    "title": "编辑rsync备份任务【多版本模式】",
+    "preconditions": "已登录TOS",
+    "steps": "",
+    "expected": "返回200，code=true",
+    "remark": "user-added",
+    "path_params": {
+      "task_id": "9"
+    },
+    "body": {
+      "id": 9,
+      "name": "Rsync-Task-4",
+      "device_id": 5,
+      "backup_mode": 2,
+      "source": [
+        {
+          "root": "/FFF",
+          "selections": [
+            {
+              "selected": "排序",
+              "filtered": [
+                "排序/大小排序",
+                "排序/时间排序",
+                "排序/类型排序",
+                "排序/音频格式",
+                "排序/默认排序"
+              ]
+            }
+          ]
+        }
+      ],
+      "destination": "/Volume1/public/dd",
+      "scheduled_task": {
+        "is_enabled": false,
+        "timed_task": {
+          "cycle_type": "EveryDay",
+          "cycle_weeks_range": "0,1,2,3,4,5,6",
+          "cycle_date": "24",
+          "schedule_time": "2026-06-24",
+          "frequency_type": "Disabled",
+          "frequency_value": 0,
+          "hour": 0,
+          "minute": 0
+        }
+      },
+      "version_strategy": {
+        "is_enabled": true,
+        "max_num": 5
+      },
+      "rsync_compress": true,
+      "rsync_whole_file": true
+    },
+    "status": "passed",
+    "latency": 75,
+    "response": {
+      "status_code": 200,
+      "body": {
+        "is_login": false,
+        "code": true,
+        "msg": "",
+        "data": null,
+        "time": 0.07202453,
+        "code_num": 0,
+        "code_msg": ""
+      }
+    }
+  }
+]

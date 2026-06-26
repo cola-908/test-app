@@ -1,0 +1,30 @@
+#!/bin/sh
+set -e
+
+APP_ID="cbtest"
+BINARY_NAME="cbtest"
+
+# 确保可执行
+chmod +x /usr/local/${APP_ID}/bin/${BINARY_NAME}
+
+# 解压 webui.bz2
+if [ -f /usr/local/${APP_ID}/webui.bz2 ]; then
+    rm -rf /usr/local/${APP_ID}/webui
+    mkdir -p /usr/local/${APP_ID}/webui
+    cd /usr/local/${APP_ID}/webui
+    tar xjf /usr/local/${APP_ID}/webui.bz2
+fi
+
+# TOS 应用发现标记文件
+echo "${APP_ID}" > /usr/local/${APP_ID}/ROUTER
+
+# 确保 socket 目录存在
+mkdir -p /var/api
+
+# 配置 systemd
+if [ -f /usr/local/${APP_ID}/init.d/${APP_ID}.service ]; then
+    cp /usr/local/${APP_ID}/init.d/${APP_ID}.service /lib/systemd/system/
+    systemctl daemon-reload
+    systemctl enable ${APP_ID}
+    systemctl start ${APP_ID}
+fi

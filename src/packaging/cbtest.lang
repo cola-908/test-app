@@ -1,0 +1,97 @@
+[zh-cn]
+name = "CB 测试工具"
+auth = "CBTest"
+descript = "CentralizedBackup 接口测试工具，用于验证 CentralizedBackup REST API 端点"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "需要 CentralizedBackup 应用已安装"
+
+[zh-hk]
+name = "CB 測試工具"
+auth = "CBTest"
+descript = "CentralizedBackup 介面測試工具，用於驗證 CentralizedBackup REST API 端點"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "需要 CentralizedBackup 應用已安裝"
+
+[en-us]
+name = "CB Test"
+auth = "CBTest"
+descript = "CentralizedBackup API testing tool for validating REST API endpoints"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "Requires CentralizedBackup app installed"
+
+[ja-jp]
+name = "CBテスト"
+auth = "CBTest"
+descript = "CentralizedBackup APIテストツール"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "CentralizedBackupアプリのインストールが必要です"
+
+[ko-kr]
+name = "CB 테스트"
+auth = "CBTest"
+descript = "CentralizedBackup API 테스트 도구"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "CentralizedBackup 앱 설치 필요"
+
+[de-de]
+name = "CB Test"
+auth = "CBTest"
+descript = "CentralizedBackup API-Testwerkzeug"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "Erfordert installierte CentralizedBackup-App"
+
+[fr-fr]
+name = "CB Test"
+auth = "CBTest"
+descript = "Outil de test API CentralizedBackup"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "Nécessite l'application CentralizedBackup installée"
+
+[es-es]
+name = "CB Test"
+auth = "CBTest"
+descript = "Herramienta de prueba API CentralizedBackup"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "Requiere la aplicación CentralizedBackup instalada"
+
+[pt-pt]
+name = "CB Test"
+auth = "CBTest"
+descript = "Ferramenta de teste API CentralizedBackup"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "Requer aplicativo CentralizedBackup instalado"
+
+[it-it]
+name = "CB Test"
+auth = "CBTest"
+descript = "Strumento di test API CentralizedBackup"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "Richiede l'app CentralizedBackup installata"
+
+[ru-ru]
+name = "CB Тест"
+auth = "CBTest"
+descript = "Инструмент тестирования API CentralizedBackup"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "Требуется установленное приложение CentralizedBackup"
+
+[pl-pl]
+name = "CB Test"
+auth = "CBTest"
+descript = "Narzędzie testowe API CentralizedBackup"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "Wymaga zainstalowanej aplikacji CentralizedBackup"
+
+[tr-tr]
+name = "CB Test"
+auth = "CBTest"
+descript = "CentralizedBackup API Test Aracı"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "CentralizedBackup uygulamasının kurulu olması gerekir"
+
+[hu-hu]
+name = "CB Test"
+auth = "CBTest"
+descript = "CentralizedBackup API teszt eszköz"
+release_note = "v2.0.003：场景流独立视图，符合TOS打包规范"
+important = "Telepített CentralizedBackup alkalmazás szükséges"

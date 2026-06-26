@@ -1,0 +1,1269 @@
+#!/usr/bin/env python3
+"""
+CB Test - CentralizedBackup API Test Application
+Type A: TOS iframe, Unix Socket backend
+"""
+import http.server
+import json
+import os
+import signal
+import sys
+import tarfile
+import bz2
+import urllib.parse
+import socket
+import time
+import threading
+import re
+import logging
+from datetime import datetime
+
+try:
+    import requests as req_lib
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
+
+APP_ID = 'cbtest'
+INSTALL_DIR = '/usr/local/' + APP_ID
+WEBUI_DIR = os.path.join(INSTALL_DIR, 'webui')
+SOCKET_PATH = '/var/api/' + APP_ID + '.sock'
+
+CONTENT_TYPES = {
+    'html': 'text/html; charset=utf-8',
+    'js': 'application/javascript; charset=utf-8',
+    'css': 'text/css; charset=utf-8',
+    'svg': 'image/svg+xml',
+    'json': 'application/json; charset=utf-8',
+    'png': 'image/png',
+    'ico': 'image/x-icon',
+}
+MAX_RESPONSE_BODY = 50000
+CASE_EDITS_PATH = os.path.join(INSTALL_DIR, 'case_edits.json')
+SCENARIOS_PATH = os.path.join(INSTALL_DIR, 'scenarios.json')
+SCENARIO_FOLDERS_PATH = os.path.join(INSTALL_DIR, 'scenario_folders.json')
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s', datefmt='%H:%M:%S')
+
+# ── 场景流数据 ─────────────────────────────────────
+scenarios = []
+scenario_folders = []
+scenario_run_state = {'running': False, 'stop': False, 'current_step': 0, 'steps': []}
+
+def _load_scenarios():
+    global scenarios, scenario_folders
+    try:
+        if os.path.isfile(SCENARIOS_PATH):
+            with open(SCENARIOS_PATH, 'r', encoding='utf-8') as f:
+                scenarios = json.load(f)
+        if os.path.isfile(SCENARIO_FOLDERS_PATH):
+            with open(SCENARIO_FOLDERS_PATH, 'r', encoding='utf-8') as f:
+                scenario_folders = json.load(f)
+        log.info(f"Loaded {len(scenarios)} scenarios, {len(scenario_folders)} folders")
+    except Exception as e:
+        log.warning(f"Failed to load scenarios: {e}")
+
+def _save_scenarios():
+    try:
+        with open(SCENARIOS_PATH, 'w', encoding='utf-8') as f:
+            json.dump(scenarios, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        log.warning(f"Failed to save scenarios: {e}")
+
+def _save_folders():
+    try:
+        with open(SCENARIO_FOLDERS_PATH, 'w', encoding='utf-8') as f:
+            json.dump(scenario_folders, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        log.warning(f"Failed to save folders: {e}")
+
+# ── Scenario Run History ─────────────────────────────────────────
+SCENARIO_RUNS_FILE = os.path.join(INSTALL_DIR, 'scenario_runs.json')
+scenario_runs = []
+MAX_RUNS = 50
+
+def _load_scenario_runs():
+    global scenario_runs
+    try:
+        with open(SCENARIO_RUNS_FILE, 'r') as f:
+            scenario_runs = json.load(f)
+    except:
+        scenario_runs = []
+
+def _save_scenario_runs():
+    with open(SCENARIO_RUNS_FILE, 'w') as f:
+        json.dump(scenario_runs[-MAX_RUNS:], f, ensure_ascii=False, indent=2, default=str)
+
+def _add_scenario_run(run_data):
+    global scenario_runs
+    _load_scenario_runs()
+    scenario_runs.append(run_data)
+    _save_scenario_runs()
+
+
+# ── 变量解析工具 ───────────────────────────────────
+def _resolve_vars(obj, ctx):
+    """递归替换 {{var}} 占位符"""
+    if isinstance(obj, str):
+        for k, v in ctx.items():
+            obj = obj.replace('{{' + k + '}}', str(v))
+        return obj
+    elif isinstance(obj, dict):
+        return {k: _resolve_vars(v, ctx) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_resolve_vars(v, ctx) for v in obj]
+    return obj
+
+def _jsonpath_get(obj, path):
+    """简单 JSONPath 取值: $.data.id 或 $.data.0.name"""
+    if not path or not path.startswith('$'):
+        return None
+    parts = path.lstrip('$').strip('.').split('.')
+    cur = obj
+    for p in parts:
+        if p == '':
+            continue
+        if isinstance(cur, dict):
+            cur = cur.get(p)
+        elif isinstance(cur, list):
+            try:
+                cur = cur[int(p)]
+            except (IndexError, ValueError):
+                return None
+        else:
+            return None
+        if cur is None:
+            return None
+    return cur
+
+def _extract_vars(result, extract_rules):
+    """从响应中按规则提取变量"""
+    extracted = {}
+    if not extract_rules or not isinstance(extract_rules, dict):
+        return extracted
+    body = result.get('response', {}).get('body', {}) if result.get('response') else {}
+    for var_name, jsonpath in extract_rules.items():
+        val = _jsonpath_get(body, jsonpath)
+        if val is not None:
+            extracted[var_name] = val
+            log.info(f"Extracted {var_name}={val} via {jsonpath}")
+    return extracted
+log = logging.getLogger(APP_ID)
+
+# ─── 全局状态 ────────────────────────────────────────
+test_cases = []
+run_state = {'running': False, 'stop': False, 'completed': 0, 'total': 0, 'results': {}}
+
+# ─── TOS 认证 ───────────────────────────────────────
+auth_state = {
+    'base_url': 'http://127.0.0.1:5050',
+    'username': 'demo',
+    'password': 'Admin123',
+    'session': None,
+    'cookies': {},
+    'csrf_token': '',
+    'logged_in': False,
+}
+
+def login_tos(username=None, password=None):
+    """登录 TOS 获取 Cookie 和 CSRF Token"""
+    if not HAS_REQUESTS:
+        return False, 'requests library not installed'
+    global auth_state
+    if username:
+        auth_state['username'] = username
+    if password:
+        auth_state['password'] = password
+
+    base = auth_state['base_url']
+    try:
+        # 创建持久 session
+        sess = req_lib.Session()
+        sess.verify = False
+
+        # Step 1: 获取 CSRF token + RSA 公钥
+        login_path = '/login/state' if base.startswith('http://127.0.0.1:5050') else '/v2/login/state'
+        r0 = sess.get(f"{base}{login_path}", timeout=10)
+        csrf_token = r0.cookies.get('X-Csrf-Token', '')
+        rsa_b64 = r0.headers.get('X-Rsa-Token', '')
+        if not csrf_token:
+            auth_state['logged_in'] = False
+            return False, 'Failed to get CSRF token'
+
+        # Step 2: 用 RSA 公钥加密密码
+        encrypted_pwd = auth_state['password']
+        if rsa_b64:
+            try:
+                encrypted_pwd = _rsa_encrypt_pure(rsa_b64, auth_state['password'])
+            except Exception as e:
+                log.warning(f"RSA encryption failed ({e}), trying plaintext login")
+
+        # Step 3: 登录
+        login_endpoint = '/login' if base.startswith('http://127.0.0.1:5050') else '/v2/login'
+        r = sess.post(
+            f"{base}{login_endpoint}",
+            json={'username': auth_state['username'], 'password': encrypted_pwd},
+            headers={'X-Csrf-Token': csrf_token},
+            timeout=10
+        )
+        body = r.json()
+        if not body.get('code', False):
+            msg = body.get('msg', body.get('code_msg', 'unknown'))
+            auth_state['logged_in'] = False
+            return False, f'Login failed: {msg}'
+
+        # Step 4: 刷新请求获取新 CSRF
+        sess.get(f"{base}{login_path}", timeout=10)
+
+        # 保存整个 session
+        auth_state['session'] = sess
+        auth_state['csrf_token'] = sess.cookies.get('X-Csrf-Token', csrf_token)
+        auth_state['logged_in'] = True
+        log.info(f"Logged in as {auth_state['username']}, CSRF={auth_state['csrf_token'][:8]}...")
+        return True, 'ok'
+    except Exception as e:
+        auth_state['logged_in'] = False
+        return False, str(e)
+
+
+def get_auth_session():
+    """获取带认证的 requests.Session"""
+    sess = auth_state.get('session')
+    if sess and auth_state['logged_in']:
+        return sess
+    # fallback: 创建带旧 cookies 的 session
+    sess = req_lib.Session()
+    sess.verify = False
+    if auth_state.get('cookies'):
+        for k, v in auth_state['cookies'].items():
+            sess.cookies.set(k, v)
+    return sess
+
+def get_auth_headers():
+    """获取带认证的请求头"""
+    h = {}
+    if auth_state['csrf_token']:
+        h['X-Csrf-Token'] = auth_state['csrf_token']
+    return h
+
+def get_auth_cookies():
+    """获取带认证的 cookies 字典"""
+    return dict(auth_state['cookies']) if auth_state['cookies'] else {}
+
+
+def _rsa_encrypt_pure(rsa_b64: str, plaintext: str) -> str:
+    """纯 Python RSA PKCS1v15 加密（OpenSSL 3.x 兼容）"""
+    import base64 as b64mod
+    pem_text = b64mod.b64decode(rsa_b64).decode('utf-8')
+
+    import subprocess
+    pem_file = f'/tmp/cbtest_rsa_{os.getpid()}.pem'
+    with open(pem_file, 'w') as f:
+        f.write(pem_text)
+
+    try:
+        # 优先用 openssl pkeyutl (OpenSSL 3.x 兼容)
+        result = subprocess.run(
+            ['openssl', 'pkeyutl', '-encrypt', '-pubin', '-inkey', pem_file, '-pkeyopt', 'rsa_padding_mode:pkcs1'],
+            input=plaintext.encode('utf-8'),
+            capture_output=True, timeout=5
+        )
+        if result.returncode == 0:
+            return b64mod.b64encode(result.stdout).decode('utf-8')
+        # Fallback: 旧版 openssl rsautl
+        result2 = subprocess.run(
+            ['openssl', 'rsautl', '-encrypt', '-pubin', '-inkey', pem_file, '-pkcs'],
+            input=plaintext.encode('utf-8'),
+            capture_output=True, timeout=5
+        )
+        if result2.returncode == 0:
+            return b64mod.b64encode(result2.stdout).decode('utf-8')
+        raise RuntimeError(result.stderr.decode() or result2.stderr.decode())
+    finally:
+        try:
+            os.unlink(pem_file)
+        except OSError:
+            pass
+
+def get_auth_headers():
+    """获取带认证的请求头"""
+    h = {}
+    if auth_state['csrf_token']:
+        h['X-Csrf-Token'] = auth_state['csrf_token']
+    return h
+
+def get_auth_cookies():
+    """获取带认证的 cookies 字典"""
+    return dict(auth_state['cookies']) if auth_state['cookies'] else {}
+
+# ─── 用例编辑持久化 ────────────────────────────────────
+_case_edits = {}  # {case_id: {field: value, ...}}
+
+def _load_case_edits():
+    """启动时加载用户对用例的编辑，合并到 test_cases"""
+    global _case_edits
+    if os.path.isfile(CASE_EDITS_PATH):
+        try:
+            with open(CASE_EDITS_PATH) as f:
+                _case_edits = json.load(f)
+            _merge_case_edits()
+            log.info(f"Loaded {len(_case_edits)} case edits")
+        except Exception as e:
+            log.warning(f"Failed to load case edits: {e}")
+
+def _merge_case_edits():
+    """将用户编辑合并到 test_cases"""
+    for cid, edit in _case_edits.items():
+        if edit.get('_action') == 'add':
+            # 用户新增的用例，如果不在 test_cases 里就加回去
+            if not any(c.get('id') == cid for c in test_cases):
+                case = {k: v for k, v in edit.items() if k != '_action'}
+                test_cases.append(case)
+            continue
+        for c in test_cases:
+            if c.get('id') == cid:
+                for k, v in edit.items():
+                    c[k] = v
+
+def _save_tests_json():
+    """将当前全量用例写回 test_cases.json"""
+    json_path = os.path.join(INSTALL_DIR, 'test_cases.json')
+    try:
+        with open(json_path, 'w') as f:
+            json.dump(test_cases, f, ensure_ascii=False, indent=2)
+        log.info(f"Synced {len(test_cases)} cases to test_cases.json")
+    except Exception as e:
+        log.warning(f"Failed to sync test_cases.json: {e}")
+
+def _save_case_edits():
+    """持久化用户编辑到 case_edits.json"""
+    try:
+        with open(CASE_EDITS_PATH, 'w') as f:
+            json.dump(_case_edits, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        log.warning(f"Failed to save case edits: {e}")
+
+def load_tests():
+    global test_cases
+    # 主路径: 从 test_cases.json 加载
+    json_path = os.path.join(INSTALL_DIR, 'test_cases.json')
+    if os.path.isfile(json_path):
+        with open(json_path) as f:
+            test_cases = json.load(f)
+        log.info(f"Loaded {len(test_cases)} test cases from JSON")
+    else:
+        # fallback: 从clients目录提取源码
+        src_dir = os.path.join(INSTALL_DIR, 'clients')
+        if os.path.isdir(src_dir):
+            test_cases = extract_from_clients(src_dir)
+            log.info(f"Extracted {len(test_cases)} test cases from clients")
+        else:
+            log.warning("No test cases found")
+    # 合并用户编辑
+    _load_case_edits()
+
+def extract_from_clients(src_dir):
+    """从API客户端源码动态提取"""
+    cases = []
+    cid = [0]
+    module_map = {
+        'win_api.py': ('PC/Server', '/v2/proxy/CentralizedBackup'),
+        'file_api.py': ('FileServer', '/v2/proxy2/CentralizedBackup'),
+        'vmware_api.py': ('VMware', '/v2/proxy2/CentralizedBackup'),
+        'hyperv_api.py': ('Hyper-V', '/v2/proxy2/CentralizedBackup/58200'),
+        'tos_api.py': ('TOS\u7cfb\u7edf', ''),
+    }
+    for fname, (mod, prefix) in module_map.items():
+        fp = os.path.join(src_dir, fname)
+        if not os.path.isfile(fp):
+            continue
+        with open(fp) as f:
+            src = f.read()
+        for m in re.finditer(r'def (\w+)\(self.*?\):\s*(?:"""(.*?)""")?', src, re.DOTALL):
+            mname, doc = m.group(1), (m.group(2) or '').strip()
+            if mname.startswith('_'):
+                continue
+            hm = re.search(r'self\.client\.(get|post|put|delete)\(\s*[fr]?["\']([^"\']+)', src[m.start():m.start()+600])
+            if not hm:
+                continue
+            meth, path = hm.group(1).upper(), hm.group(2)
+            cid[0] += 1
+            cases.append({
+                'id': f'CB-{cid[0]:03d}', 'module': mod,
+                'path': prefix + path if prefix else path,
+                'method': meth, 'priority': 'P2',
+                'feature': '\u5176\u4ed6', 'title': mname,
+                'preconditions': '\u5df2\u767b\u5f55TOS',
+                'steps': f'1. {meth} {path}',
+                'expected': '\u8fd4\u56de200\uff0c\u8bf7\u6c42\u6210\u529f',
+                'remark': '', 'status': 'pending', 'latency': 0, 'response': None,
+            })
+    return cases
+
+def run_single(test, base_url, headers=None, cookies=None):
+    """执行单个接口测试"""
+    # 路径处理
+    path = re.sub(r'\{[^}]+\}', '0', test['path'])
+    # # 5050 内部 API：需要去掉 /v2 前缀
+    # # 8181 nginx：保持完整 /v2/proxy/... 路径
+    # if base_url.startswith('http://127.0.0.1:5050'):
+    #     path = re.sub(r'^/v2', '', path)
+    # 追加 query_params
+    qp = test.get('query_params', '')
+    if qp:
+        path = path + '?' + qp
+    url = base_url + path
+    method = test['method'].lower()
+    t0 = time.time()
+    try:
+        if not HAS_REQUESTS:
+            return {'status': 'failed', 'duration_ms': 0, 'response_code': 0, 'response_body': json.dumps({'error': 'requests library not installed'}, ensure_ascii=False), 'response': {'error': 'requests library not installed'}}
+
+        # 策略1: 优先使用后端已认证的 session
+        use_auth_session = auth_state.get('logged_in') and get_auth_session()
+        if use_auth_session:
+            sess = get_auth_session()
+            csrf = auth_state.get('csrf_token', '')
+            req_headers = {'X-Csrf-Token': csrf} if csrf else {}
+            if headers:
+                req_headers.update(headers)
+            kw = dict(headers=req_headers, timeout=15)
+            if method in ('post', 'put', 'delete'):
+                kw['json'] = test.get('body') or {}
+            r = getattr(sess, method)(url, **kw)
+        else:
+            # 策略2: fallback 使用前端传来的 cookies/csrf
+            if not cookies and not headers:
+                return {'status': 'failed', 'duration_ms': 0, 'response_code': 0,
+                        'response_body': json.dumps({'error': 'please login', 'code_num': 117}, ensure_ascii=False),
+                        'response': {'error': 'No authenticated session and no browser cookies provided'}}
+            req_headers = dict(headers or {})
+            req_cookies = dict(cookies or {})
+            kw = dict(headers=req_headers, cookies=req_cookies, timeout=15, verify=False)
+            if method in ('post', 'put', 'delete'):
+                kw['json'] = test.get('body') or {}
+            sess = req_lib.Session()
+            sess.verify = False
+            r = getattr(sess, method)(url, **kw)
+
+        elapsed = time.time() - t0
+        try:
+            body = r.json()
+        except Exception:
+            body = {'_status': r.status_code, '_text': r.text[:MAX_RESPONSE_BODY]}
+        # 检查是否 session 已过期 (please login)
+        if body.get('code_num') == 117 or body.get('code_msg', '') == 'please login':
+            auth_state['logged_in'] = False
+        # 截断大body
+        body_str = json.dumps(body, ensure_ascii=False, default=str)
+        if len(body_str) > MAX_RESPONSE_BODY * 2:
+            body = {'_truncated': True, '_status': r.status_code}
+        ok = r.status_code == 200 and body.get('code', True) is True
+        return {
+            'status': 'passed' if ok else 'failed',
+            'duration_ms': round(elapsed * 1000),
+            'response_code': r.status_code,
+            'response_body': json.dumps(body, ensure_ascii=False, default=str),
+            'method': method.upper(),
+            'url': url,
+            'response': {'status_code': r.status_code, 'body': body},
+        }
+    except Exception as e:
+        return {'status': 'failed', 'duration_ms': 0, 'response_code': 0, 'response_body': json.dumps({'error': str(e)}, ensure_ascii=False), 'response': {'error': str(e)}}
+
+# ─── HTTP Handler ────────────────────────────────────
+class Handler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        path = urllib.parse.urlparse(self.path).path
+        for p in [f'/{APP_ID}', f'/{APP_ID}/']:
+            if path.startswith(p):
+                path = path[len(p):] or '/'
+                break
+        if path.startswith('/api/'):
+            self._api('GET', path, None)
+        else:
+            self._static(path)
+
+    def do_PUT(self):
+        path = urllib.parse.urlparse(self.path).path
+        for p in [f'/{APP_ID}', f'/{APP_ID}/']:
+            if path.startswith(p):
+                path = path[len(p):] or '/'
+                break
+        cl = int(self.headers.get('Content-Length', 0))
+        raw = self.rfile.read(cl) if cl > 0 else b''
+        try:
+            data = json.loads(raw) if raw else {}
+        except Exception:
+            data = {}
+        self._api('PUT', path, data)
+
+    def do_DELETE(self):
+        path = urllib.parse.urlparse(self.path).path
+        for p in [f'/{APP_ID}', f'/{APP_ID}/']:
+            if path.startswith(p):
+                path = path[len(p):] or '/'
+                break
+        cl = int(self.headers.get('Content-Length', 0))
+        raw = self.rfile.read(cl) if cl > 0 else b''
+        try:
+            data = json.loads(raw) if raw else {}
+        except Exception:
+            data = {}
+        self._api('DELETE', path, data)
+
+    def do_POST(self):
+        path = urllib.parse.urlparse(self.path).path
+        for p in [f'/{APP_ID}', f'/{APP_ID}/']:
+            if path.startswith(p):
+                path = path[len(p):] or '/'
+                break
+        cl = int(self.headers.get('Content-Length', 0))
+        raw = self.rfile.read(cl) if cl > 0 else b''
+        try:
+            data = json.loads(raw) if raw else {}
+        except Exception:
+            data = {}
+        self._api('POST', path, data)
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Csrf-Token, Cookie')
+        self.send_header('Access-Control-Max-Age', '86400')
+        self.end_headers()
+
+    def _static(self, path):
+        if path in ('/', ''):
+            path = '/index.html'
+        fp = os.path.join(WEBUI_DIR, path.lstrip('/'))
+        rw = os.path.realpath(WEBUI_DIR)
+        rf = os.path.realpath(fp)
+        if not rf.startswith(rw):
+            self.send_error(403)
+            return
+        if os.path.isfile(rf):
+            ext = rf.rsplit('.', 1)[-1].lower()
+            with open(rf, 'rb') as f:
+                data = f.read()
+            self.send_response(200)
+            self.send_header('Content-Type', CONTENT_TYPES.get(ext, 'application/octet-stream'))
+            self.send_header('Content-Length', str(len(data)))
+            self.send_header('Cache-Control', 'no-store')
+            self.end_headers()
+            self.wfile.write(data)
+        else:
+            self.send_error(404)
+
+    def _api(self, method, path, data):
+        if path == '/api/tests':
+            self._json({'code': True, 'data': test_cases})
+        elif path == '/api/run' and method == 'POST':
+            self._run(data or {})
+        elif path == '/api/progress':
+            d = dict(run_state)
+            d['done'] = d.get('completed', 0)
+            self._json({'code': True, 'data': d})
+        elif path == '/api/results':
+            self._json({'code': True, 'data': {'results': run_state.get('results', {})}})
+        elif path == '/api/stop':
+            run_state['stop'] = True
+            self._json({'code': True, 'data': {'stopping': True}})
+        elif path == '/api/health':
+            self._json({'code': True, 'data': {'status': 'ok', 'app': APP_ID, 'tests': len(test_cases), 'auth': auth_state['logged_in']}})
+        elif path == '/api/login' and method == 'POST':
+            self._handle_login(data or {})
+        elif path == '/api/auth_status':
+            logged = auth_state['logged_in']
+            uname = auth_state['username']
+            b_url = auth_state['base_url']
+            # 如果未登录但请求带了 TOS cookie，自动信任
+            if not logged:
+                ck = {}
+                ch = self.headers.get('Cookie', '')
+                for p in ch.split(';'):
+                    p = p.strip()
+                    if '=' in p:
+                        k, v = p.split('=', 1)
+                        ck[k.strip()] = v.strip()
+                if ck.get('TMSESSNAME') and ck.get('X-Csrf-Token'):
+                    auth_state['session'] = None
+                    auth_state['cookies'] = {'TMSESSNAME': ck['TMSESSNAME'], 'X-Csrf-Token': ck['X-Csrf-Token']}
+                    auth_state['csrf_token'] = ck['X-Csrf-Token']
+                    auth_state['logged_in'] = True
+                    if b_url == 'http://127.0.0.1:5050':
+                        auth_state['base_url'] = 'http://127.0.0.1:8181'
+                    b_url = auth_state['base_url']
+                    logged = True
+                    uname = 'demo'
+                    log.info(f"Auto-login via auth_status cookie, session={ck['TMSESSNAME'][:8]}...")
+            self._json({'code': True, 'data': {
+                'logged_in': logged,
+                'username': uname,
+                'base_url': b_url,
+            }})
+        elif path == '/api/clear':
+            run_state['results'] = {}
+            run_state['completed'] = 0
+            for t in test_cases:
+                t['status'] = 'pending'
+                t['latency'] = 0
+                t['response'] = None
+            self._json({'code': True})
+        elif path == '/api/case_update' and method == 'POST':
+            self._case_update(data or {})
+        elif path == '/api/case_add' and method == 'POST':
+            self._case_add(data or {})
+        elif path == '/api/case_delete' and method == 'POST':
+            self._case_delete(data or {})
+        elif path == '/api/sync_source' and method == 'POST':
+            self._sync_source(data or {})
+        elif path == '/api/case_reset' and method == 'POST':
+            self._case_reset(data or {})
+        # ── 场景流路由 ──────────────────────────
+        elif path == '/api/scenario_folders' and method == 'GET':
+            self._json({'code': True, 'data': scenario_folders})
+        elif path == '/api/scenario_folders' and method == 'POST':
+            self._folder_add(data or {})
+        elif path.startswith('/api/scenario_folders/') and method == 'PUT':
+            self._folder_edit(path.split('/')[-1], data or {})
+        elif path.startswith('/api/scenario_folders/') and method == 'DELETE':
+            self._folder_delete(path.split('/')[-1])
+        elif path == '/api/scenarios' and method == 'GET':
+            self._json({'code': True, 'data': scenarios})
+        elif path == '/api/scenarios' and method == 'POST':
+            self._scenario_add(data or {})
+        elif path.startswith('/api/scenarios/') and path.endswith('/run') and method == 'POST':
+            sid = path.split('/')[-2]
+            self._scenario_run(sid, data or {})
+        elif path.startswith('/api/scenarios/') and method == 'PUT':
+            self._scenario_edit(path.split('/')[-1], data or {})
+        elif path.startswith('/api/scenarios/') and method == 'DELETE':
+            self._scenario_delete(path.split('/')[-1])
+        elif path.startswith('/api/scenarios/') and path.endswith('/record') and method == 'POST':
+            sid = path.split('/')[-2]
+            self._scenario_record(sid, data or {})
+        elif path == '/api/scenario_progress' and method == 'GET':
+            self._json({'code': True, 'data': scenario_run_state})
+        elif path == '/api/scenario_runs' and method == 'GET':
+            _load_scenario_runs()
+            sid = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(self.path).query)).get('scenario_id', '')
+            if not sid:
+                self._json({'code': True, 'data': scenario_runs})
+            else:
+                runs = [r for r in scenario_runs if r.get('scenario_id') == sid]
+                self._json({'code': True, 'data': runs})
+        elif path == '/api/scenario_runs/clear' and method == 'POST':
+            _load_scenario_runs()
+            sid = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(self.path).query)).get('scenario_id', '')
+            if sid:
+                scenario_runs[:] = [r for r in scenario_runs if r.get('scenario_id') != sid]
+            else:
+                scenario_runs.clear()
+            _save_scenario_runs()
+            self._json({'code': True, 'data': {'cleared': True}})
+        elif path == '/api/scenario_stop' and method == 'POST':
+            scenario_run_state['stop'] = True
+            self._json({'code': True, 'data': {'stopping': True}})
+
+    def _handle_login(self, data):
+        """处理前端登录请求"""
+        username = data.get('username', '')
+        password = data.get('password', '')
+        base_url = data.get('base_url', auth_state['base_url'])
+        browser_session = data.get('browser_session', '')
+        browser_csrf = data.get('browser_csrf', '')
+        if base_url:
+            auth_state['base_url'] = base_url
+
+        # 策略1: 优先用浏览器 session（直接信任，不验证）
+        if browser_session and browser_csrf and HAS_REQUESTS:
+            auth_state['session'] = None
+            auth_state['cookies'] = {'TMSESSNAME': browser_session, 'X-Csrf-Token': browser_csrf}
+            auth_state['csrf_token'] = browser_csrf
+            auth_state['logged_in'] = True
+            auth_state['username'] = username or 'demo'
+            if password:
+                auth_state['password'] = password
+            log.info(f"Browser session login OK, user={auth_state['username']}")
+            self._json({'code': True, 'data': {'logged_in': True, 'username': auth_state['username']}})
+            return
+
+        # 策略2: 有用户名+密码，RSA 加密登录
+        if username and password:
+            ok, msg = login_tos(username=username, password=password)
+            if ok:
+                self._json({'code': True, 'data': {'logged_in': True, 'username': username}})
+            else:
+                self._json({'code': False, 'msg': msg})
+            return
+
+        # 策略3: 后端已登录
+        if auth_state.get('logged_in'):
+            self._json({'code': True, 'data': {'logged_in': True, 'username': auth_state.get('username', '')}})
+            return
+
+        self._json({'code': False, 'msg': '请输入用户名和密码进行登录'})
+
+    def _case_update(self, data):
+        """保存用例编辑"""
+        cid = data.get('id', '')
+        if not cid:
+            self._json({'code': False, 'msg': 'missing id'})
+            return
+        case = next((c for c in test_cases if c.get('id') == cid), None)
+        if not case:
+            self._json({'code': False, 'msg': 'case not found'})
+            return
+        # 可编辑字段
+        editable = ['path', 'method', 'title', 'body', 'path_params', 'query_params',
+                    'priority', 'feature', 'preconditions', 'steps', 'expected']
+        updates = {}
+        for k in editable:
+            if k in data:
+                updates[k] = data[k]
+                case[k] = data[k]
+        if updates:
+            _case_edits[cid] = updates
+            _save_case_edits()
+            _save_tests_json()
+        self._json({'code': True, 'data': case})
+
+    def _case_reset(self, data):
+        """重置用例到原始状态"""
+        cid = data.get('id', '')
+        if not cid:
+            self._json({'code': False, 'msg': 'missing id'})
+            return
+        # 从原始 JSON 重新加载该用例
+        json_path = os.path.join(INSTALL_DIR, 'test_cases.json')
+        if os.path.isfile(json_path):
+            with open(json_path) as f:
+                original = json.load(f)
+            orig_case = next((c for c in original if c.get('id') == cid), None)
+            if orig_case:
+                # 更新 test_cases 中的对应项
+                for i, c in enumerate(test_cases):
+                    if c.get('id') == cid:
+                        test_cases[i] = dict(orig_case)
+                        break
+                # 移除编辑
+                _case_edits.pop(cid, None)
+                _save_case_edits()
+                _save_tests_json()
+                self._json({'code': True, 'data': test_cases[i] if any(c.get('id') == cid for c in test_cases) else orig_case})
+                return
+        self._json({'code': False, 'msg': 'original not found'})
+
+    def _sync_source(self, data):
+        """将安装目录的 test_cases.json 同步回源码目录"""
+        src_path = data.get('source_path', '/Volume1/eee/cb-test-app/src/test_cases.json')
+        install_json = os.path.join(INSTALL_DIR, 'test_cases.json')
+        if not os.path.isfile(install_json):
+            self._json({'code': False, 'msg': 'install test_cases.json not found'})
+            return
+        try:
+            os.makedirs(os.path.dirname(src_path), exist_ok=True)
+            import shutil
+            shutil.copy2(install_json, src_path)
+            log.info(f"Synced test_cases.json to source: {src_path}")
+            self._json({'code': True, 'data': {'synced_to': src_path, 'count': len(test_cases)}})
+        except Exception as e:
+            self._json({'code': False, 'msg': str(e)})
+
+    def _case_add(self, data):
+        """新增测试用例"""
+        # 生成自增ID
+        max_num = 0
+        for c in test_cases:
+            m = re.match(r'CB-(\d+)', c.get('id', ''))
+            if m:
+                max_num = max(max_num, int(m.group(1)))
+        new_id = f'CB-{max_num + 1:03d}'
+
+        new_case = {
+            'id': new_id,
+            'module': data.get('module', 'PC/Server'),
+            'path': data.get('path', '/v2/proxy/CentralizedBackup/'),
+            'method': data.get('method', 'GET'),
+            'priority': data.get('priority', 'P2'),
+            'feature': data.get('feature', ''),
+            'title': data.get('title', f'新用例-{new_id}'),
+            'preconditions': data.get('preconditions', '已登录TOS'),
+            'steps': data.get('steps', ''),
+            'expected': data.get('expected', '返回200，code=true'),
+            'remark': data.get('remark', 'user-added'),
+        }
+        if data.get('path_params'):
+            new_case['path_params'] = data['path_params']
+        if data.get('query_params'):
+            if isinstance(data['query_params'], dict):
+                qp = data['query_params']
+                new_case['query_params'] = '&'.join(f'{k}={v}' for k, v in qp.items()) if qp else ''
+            else:
+                new_case['query_params'] = str(data['query_params'])
+        if data.get('body'):
+            new_case['body'] = data['body']
+        if data.get('body_schema'):
+            new_case['body_schema'] = data['body_schema']
+
+        test_cases.append(new_case)
+        # 持久化到 case_edits
+        _case_edits[new_id] = {'_action': 'add', **new_case}
+        _save_case_edits()
+        # 同步写入 test_cases.json
+        _save_tests_json()
+        log.info(f"Added new case {new_id}: {new_case['title']}")
+        self._json({'code': True, 'data': new_case})
+
+    def _case_delete(self, data):
+        """删除用例"""
+        cid = data.get('id', '')
+        if not cid:
+            self._json({'code': False, 'msg': 'missing id'})
+            return
+        idx = next((i for i, c in enumerate(test_cases) if c.get('id') == cid), -1)
+        if idx < 0:
+            self._json({'code': False, 'msg': 'case not found'})
+            return
+        test_cases.pop(idx)
+        _case_edits.pop(cid, None)
+        _save_case_edits()
+        _save_tests_json()
+        run_state['results'].pop(cid, None)
+        log.info(f"Deleted case {cid}")
+        self._json({'code': True, 'data': {'deleted': cid}})
+
+    # ── 文件夹 CRUD ────────────────────────────────
+    def _folder_add(self, data):
+        name = data.get('name', '').strip()
+        if not name:
+            self._json({'code': False, 'msg': 'name required'})
+            return
+        fid = f"F{int(time.time()*1000)}"
+        folder = {'id': fid, 'name': name}
+        scenario_folders.append(folder)
+        _save_folders()
+        self._json({'code': True, 'data': folder})
+
+    def _folder_edit(self, fid, data):
+        for f in scenario_folders:
+            if f['id'] == fid:
+                if 'name' in data:
+                    f['name'] = data['name']
+                _save_folders()
+                self._json({'code': True, 'data': f})
+                return
+        self._json({'code': False, 'msg': 'folder not found'})
+
+    def _folder_delete(self, fid):
+        # 检查是否有场景引用
+        if any(s.get('folder') == fid for s in scenarios):
+            self._json({'code': False, 'msg': '文件夹非空，先移除场景'})
+            return
+        scenario_folders[:] = [f for f in scenario_folders if f['id'] != fid]
+        _save_folders()
+        self._json({'code': True, 'data': {'deleted': fid}})
+
+    # ── 场景 CRUD ──────────────────────────────────
+    def _scenario_add(self, data):
+        sid = f"S{int(time.time()*1000)}"
+        scenario = {
+            'id': sid,
+            'name': data.get('name', '新场景'),
+            'description': data.get('description', ''),
+            'folder': data.get('folder', ''),
+            'module': data.get('module', ''),
+            'steps': data.get('steps', [])
+        }
+        scenarios.append(scenario)
+        _save_scenarios()
+        log.info(f"Created scenario {sid}: {scenario['name']}")
+        self._json({'code': True, 'data': scenario})
+
+    def _scenario_edit(self, sid, data):
+        for s in scenarios:
+            if s['id'] == sid:
+                for key in ['name', 'description', 'folder', 'module', 'steps']:
+                    if key in data:
+                        s[key] = data[key]
+                _save_scenarios()
+                self._json({'code': True, 'data': s})
+                return
+        self._json({'code': False, 'msg': 'scenario not found'})
+
+    def _scenario_delete(self, sid):
+        scenarios[:] = [s for s in scenarios if s['id'] != sid]
+        _save_scenarios()
+        self._json({'code': True, 'data': {'deleted': sid}})
+
+    # ── 场景执行引擎 ────────────────────────────────
+    
+    def _scenario_record(self, sid, data):
+        """录制模式：执行场景但不做断言，将响应存为 expected.snapshot"""
+        if scenario_run_state['running']:
+            self._json({'code': False, 'msg': '场景已在执行中'})
+            return
+        scenario = next((s for s in scenarios if s['id'] == sid), None)
+        if not scenario:
+            self._json({'code': False, 'msg': 'scenario not found'})
+            return
+
+        env = data.get('env', {})
+        base_url = 'http://127.0.0.1:8181'
+        req_cookie_header = self.headers.get('Cookie', '')
+        browser_session = env.get('session', '')
+        browser_csrf = env.get('csrf_token', '')
+        if not browser_session or not browser_csrf:
+            for pair in req_cookie_header.split(';'):
+                pair = pair.strip()
+                if '=' in pair:
+                    k, v = pair.split('=', 1)
+                    k = k.strip(); v = v.strip()
+                    if k == 'X-Csrf-Token' and not browser_csrf:
+                        browser_csrf = v
+                    if k == 'TMSESSNAME' and not browser_session:
+                        browser_session = v
+
+        if not browser_session or not browser_csrf:
+            self._json({'code': False, 'msg': '未检测到登录信息'})
+            return
+
+        headers = {'X-Csrf-Token': browser_csrf}
+        cookies = {'TMSESSNAME': browser_session, 'X-Csrf-Token': browser_csrf}
+
+        steps = scenario.get('steps', [])
+        steps.sort(key=lambda x: x.get('order', 0))
+
+        scenario_run_state['running'] = True
+        scenario_run_state['stop'] = False
+        scenario_run_state['steps'] = []
+        ctx = {}
+
+        def recorder():
+            for i, step in enumerate(steps):
+                if scenario_run_state['stop']:
+                    scenario_run_state['steps'].append({'order': step.get('order'), 'title': step.get('title',''), 'status': 'skipped'})
+                    continue
+                test_case = next((t for t in test_cases if t['id'] == step['case_id']), None)
+                if not test_case:
+                    scenario_run_state['steps'].append({'order': step.get('order'), 'title': step.get('title',''), 'status': 'error', 'error': 'case not found'})
+                    break
+                test_run = dict(test_case)
+                overrides = step.get('overrides', {})
+                if overrides:
+                    resolved = _resolve_vars(overrides, ctx)
+                    if resolved.get('path_params'):
+                        pp = test_run.get('path_params', {})
+                        pp.update(resolved['path_params'])
+                        test_run['path_params'] = pp
+                    if resolved.get('body') is not None:
+                        test_run['body'] = resolved['body']
+                pp = test_run.get('path_params', {})
+                if pp:
+                    for k, v in pp.items():
+                        pp[k] = _resolve_vars(v, ctx)
+                    resolved_path = test_run['path']
+                    for k, v in pp.items():
+                        resolved_path = resolved_path.replace('{' + k + '}', str(v))
+                    test_run['path'] = resolved_path
+                api_url = base_url.replace('127.0.0.1:5050', '127.0.0.1:8181')
+                result = run_single(test_run, api_url, headers, cookies)
+                # 录制：从结果中提取 expected
+                resp_body = result.get('response', {}).get('body', '')
+                expected = {
+                    'status_code': result.get('response_code', 200),
+                    'snapshot': {'body': resp_body, 'mode': 'exact'}
+                }
+                # 更新 step 的 expected
+                step['expected'] = expected
+                # 也提取变量（供后续步骤用）
+                extracted = _extract_vars(result, step.get('extract', {}))
+                ctx.update(extracted)
+                scenario_run_state['steps'].append({
+                    'order': step.get('order'),
+                    'title': step.get('title', ''),
+                    'status': 'recorded',
+                    'response_code': result.get('response_code', 0),
+                    'extracted': extracted
+                })
+            _save_scenarios()
+            scenario_run_state['running'] = False
+            # 保存录制记录
+            run_steps = scenario_run_state.get('steps', [])
+            run_data = {
+                'id': f"rec_{int(time.time()*1000)}",
+                'scenario_id': sid,
+                'scenario_name': scenario.get('name', ''),
+                'started_at': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+                'finished_at': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+                'status': 'recorded',
+                'total': len(run_steps),
+                'passed': len(run_steps),
+                'failed': 0,
+                'steps': run_steps
+            }
+            _add_scenario_run(run_data)
+
+        threading.Thread(target=recorder, daemon=True).start()
+        self._json({'code': True, 'data': {'started': True, 'total': len(steps), 'id': sid}})
+
+    def _scenario_run(self, sid, data):
+        if scenario_run_state['running']:
+            self._json({'code': False, 'msg': '场景已在执行中'})
+            return
+        scenario = next((s for s in scenarios if s['id'] == sid), None)
+        if not scenario:
+            self._json({'code': False, 'msg': 'scenario not found'})
+            return
+
+        env = data.get('env', {})
+        base_url = 'http://127.0.0.1:8181'  # 固定走 8181 nginx
+
+        # 从请求 Cookie 头提取 browser session
+        req_cookie_header = self.headers.get('Cookie', '')
+        browser_session = env.get('session', '')
+        browser_csrf = env.get('csrf_token', '')
+        if not browser_session or not browser_csrf:
+            for pair in req_cookie_header.split(';'):
+                pair = pair.strip()
+                if '=' in pair:
+                    k, v = pair.split('=', 1)
+                    k = k.strip(); v = v.strip()
+                    if k == 'X-Csrf-Token' and not browser_csrf:
+                        browser_csrf = v
+                    if k == 'TMSESSNAME' and not browser_session:
+                        browser_session = v
+
+        if not browser_session or not browser_csrf:
+            self._json({'code': False, 'msg': '未检测到登录信息，请先登录 TOS'})
+            return
+
+        log.info(f"Scenario run with browser session, session={browser_session[:8]}...")
+
+        # 构建请求用的 headers/cookies
+        headers = {'X-Csrf-Token': browser_csrf}
+        cookies = {'TMSESSNAME': browser_session, 'X-Csrf-Token': browser_csrf}
+        auth_state['logged_in'] = False  # 强制 run_single 走策略2
+
+        steps = scenario.get('steps', [])
+        steps.sort(key=lambda x: x.get('order', 0))
+
+        scenario_run_state['running'] = True
+        scenario_run_state['stop'] = False
+        scenario_run_state['current_step'] = 0
+        scenario_run_state['steps'] = []
+        scenario_run_state['ctx'] = {}
+
+        def worker():
+            ctx = {}
+            for i, step in enumerate(steps):
+                if scenario_run_state['stop']:
+                    scenario_run_state['steps'].append({'order': step.get('order'), 'case_id': step.get('case_id'), 'title': step.get('title',''), 'status': 'skipped'})
+                    continue
+                scenario_run_state['current_step'] = i + 1
+                # 找对应用例
+                test_case = next((t for t in test_cases if t['id'] == step['case_id']), None)
+                if not test_case:
+                    scenario_run_state['steps'].append({'order': step.get('order'), 'case_id': step.get('case_id'), 'title': step.get('title',''), 'status': 'error', 'error': 'case not found'})
+                    break
+                # 合并覆盖参数并替换变量
+                test_run = dict(test_case)
+                overrides = step.get('overrides', {})
+                if overrides:
+                    resolved = _resolve_vars(overrides, ctx)
+                    if resolved.get('path_params'):
+                        pp = test_run.get('path_params', {})
+                        pp.update(resolved['path_params'])
+                        test_run['path_params'] = pp
+                    if resolved.get('body') is not None:
+                        test_run['body'] = resolved['body']
+                # 解析路径参数（先对值做变量替换）
+                pp = test_run.get('path_params', {})
+                if pp:
+                    # 用 ctx 变量替换路径参数值
+                    for k, v in pp.items():
+                        pp[k] = _resolve_vars(v, ctx)
+                    resolved_path = test_run['path']
+                    for k, v in pp.items():
+                        resolved_path = resolved_path.replace('{' + k + '}', str(v))
+                    test_run['path'] = resolved_path
+                # 执行（API 请求走 8181 nginx 入口，绕过 session 验证）
+                api_url = base_url.replace('127.0.0.1:5050', '127.0.0.1:8181')
+                result = run_single(test_run, api_url, headers, cookies)
+                # 提取变量
+                extracted = _extract_vars(result, step.get('extract', {}))
+                ctx.update(extracted)
+                scenario_run_state['ctx'] = dict(ctx)
+                scenario_run_state['steps'].append({
+                    'order': step.get('order'),
+                    'case_id': step.get('case_id'),
+                    'title': step.get('title', ''),
+                    'status': result['status'],
+                    'duration_ms': result.get('duration_ms', 0),
+                    'response_code': result.get('response_code', 0),
+                    'extracted': extracted,
+                    'response_body': result.get('response_body', '')[:500]
+                })
+                if result['status'] != 'passed':
+                    break
+                time.sleep(0.1)
+            scenario_run_state['running'] = False
+            # 保存执行记录
+            run_steps = scenario_run_state.get('steps', [])
+            total = len(run_steps)
+            passed = sum(1 for s in run_steps if s.get('status') == 'passed')
+            failed = sum(1 for s in run_steps if s.get('status') == 'failed')
+            run_status = 'passed' if failed == 0 else ('failed' if passed == 0 else 'partial')
+            run_data = {
+                'id': f"run_{int(time.time()*1000)}",
+                'scenario_id': sid,
+                'scenario_name': scenario.get('name', ''),
+                'started_at': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+                'finished_at': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+                'status': run_status,
+                'total': total,
+                'passed': passed,
+                'failed': failed,
+                'steps': run_steps
+            }
+            _add_scenario_run(run_data)
+
+        threading.Thread(target=worker, daemon=True).start()
+        self._json({'code': True, 'data': {'started': True, 'total': len(steps), 'id': sid}})
+
+    def _run(self, data):
+        if run_state['running']:
+            self._json({'code': False, 'msg': '\u5df2\u5728\u6267\u884c\u4e2d'})
+            return
+
+        env = data.get('env', {})
+        base_url = 'http://127.0.0.1:8181'
+        ids = data.get('ids', [])
+        module = data.get('module', 'all')
+        case_overrides = data.get('case_overrides', {})
+
+        # \u4ece\u8bf7\u6c42 Cookie \u5934\u63d0\u53d6 browser session
+        browser_session = env.get('session', '')
+        browser_csrf = env.get('csrf_token', '')
+        if not browser_session or not browser_csrf:
+            req_cookie_header = self.headers.get('Cookie', '')
+            for pair in req_cookie_header.split(';'):
+                pair = pair.strip()
+                if '=' in pair:
+                    k, v = pair.split('=', 1)
+                    k = k.strip(); v = v.strip()
+                    if k == 'X-Csrf-Token' and not browser_csrf:
+                        browser_csrf = v
+                    if k == 'TMSESSNAME' and not browser_session:
+                        browser_session = v
+
+        if not browser_session or not browser_csrf:
+            self._json({'code': False, 'msg': '\u672a\u68c0\u6d4b\u5230\u767b\u5f55\u4fe1\u606f\uff0c\u8bf7\u5148\u767b\u5f55 TOS'})
+            return
+
+        headers = {'X-Csrf-Token': browser_csrf}
+        cookies = {'TMSESSNAME': browser_session, 'X-Csrf-Token': browser_csrf}
+        auth_state['logged_in'] = False
+
+        targets = [t for t in test_cases if t['id'] in ids] if ids else list(test_cases)
+        if module != 'all':
+            ml = {'win': 'PC/Server', 'file': 'FileServer', 'vmware': 'VMware', 'hyperv': 'Hyper-V', 'tos': 'TOS'}
+            mo = ml.get(module, module)
+            targets = [t for t in targets if t['module'] == mo]
+
+        run_state['running'] = True
+        run_state['stop'] = False
+        run_state['completed'] = 0
+        run_state['total'] = len(targets)
+        run_state['results'] = {}
+
+        def worker():
+            for t in targets:
+                if run_state['stop']:
+                    t['status'] = 'skipped'
+                    run_state['results'][t['id']] = {'status': 'skipped', 'duration_ms': 0, 'response_code': 0, 'response_body': '', 'response': None}
+                    run_state['completed'] += 1
+                    continue
+                tid = t['id']
+                overrides = case_overrides.get(tid, {})
+                test_run = dict(t)
+                if overrides.get('path_params'):
+                    test_run['path_params'] = overrides['path_params']
+                if overrides.get('body') is not None:
+                    test_run['body'] = overrides['body']
+                pp = test_run.get('path_params', {})
+                if pp:
+                    resolved_path = test_run['path']
+                    for k, v in pp.items():
+                        resolved_path = resolved_path.replace('{' + k + '}', str(v))
+                    test_run['path'] = resolved_path
+                t['status'] = 'running'
+                result = run_single(test_run, base_url, headers, cookies)
+                t['status'] = result['status']
+                t['latency'] = result.get('duration_ms', 0)
+                t['response'] = result.get('response', None)
+                run_state['results'][t['id']] = result
+                run_state['completed'] += 1
+                time.sleep(0.05)
+            run_state['running'] = False
+
+        threading.Thread(target=worker, daemon=True).start()
+        self._json({'code': True, 'data': {'started': True, 'total': len(targets)}})
+
+    def _json(self, data, code=200):
+        body = json.dumps(data, ensure_ascii=False, default=str).encode('utf-8')
+        self.send_response(code)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, fmt, *args):
+        pass
+
+class UnixSocketHTTPServer(http.server.HTTPServer):
+    address_family = socket.AF_UNIX
+
+def extract_webui():
+    bz2_path = os.path.join(INSTALL_DIR, 'webui.bz2')
+    if os.path.isfile(bz2_path):
+        os.makedirs(WEBUI_DIR, exist_ok=True)
+        with bz2.open(bz2_path, 'rb') as f:
+            with tarfile.open(fileobj=f, mode='r') as tar:
+                tar.extractall(WEBUI_DIR)
+        log.info("Extracted webui.bz2")
+
+def main():
+    extract_webui()
+    load_tests()
+    _load_scenarios()
+    # 自动尝试登录本地 TOS
+    if HAS_REQUESTS:
+        ok, msg = login_tos()
+        if ok:
+            log.info("Auto-login succeeded")
+        else:
+            log.warning(f"Auto-login failed: {msg}")
+    os.makedirs(os.path.dirname(SOCKET_PATH), exist_ok=True)
+    if os.path.exists(SOCKET_PATH):
+        os.unlink(SOCKET_PATH)
+    server = UnixSocketHTTPServer(SOCKET_PATH, Handler)
+    os.chmod(SOCKET_PATH, 0o666)
+    def shutdown(sig, frame):
+        server.server_close()
+        if os.path.exists(SOCKET_PATH):
+            os.unlink(SOCKET_PATH)
+        sys.exit(0)
+    signal.signal(signal.SIGTERM, shutdown)
+    signal.signal(signal.SIGINT, shutdown)
+    log.info(f"CB Test listening on {SOCKET_PATH}, {len(test_cases)} cases ready")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        shutdown(None, None)
+
+if __name__ == '__main__':
+    main()
